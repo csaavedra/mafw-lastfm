@@ -4,6 +4,13 @@
 
 #define WANTED_RENDERER     "Mafw-Gst-Renderer"
 
+static const gchar *
+mafw_metadata_lookup_string (GHashTable *table,
+			     const gchar *key)
+{
+	return g_value_get_string (g_hash_table_lookup (table, key));
+}
+
 static void
 browse_metadata (gchar *key,
 		 gchar *value,
@@ -19,9 +26,9 @@ metadata_callback (MafwRenderer *self,
 		   gpointer user_data,
 		   const GError *error)
 {
-	/* g_hash_table_foreach (metadata, browse_metadata, user_data); */
-	g_print ("object_id: %s", object_id);
-	mafw_metadata_print (metadata, NULL);
+	g_print ("artist: %s\n", mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_ARTIST));
+	g_print ("title: %s\n", mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_TITLE));
+	g_print ("album: %s\n\n", mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_ALBUM));
 }
 
 static void
