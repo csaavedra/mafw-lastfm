@@ -12,14 +12,6 @@ mafw_metadata_lookup_string (GHashTable *table,
 }
 
 static void
-browse_metadata (gchar *key,
-		 gchar *value,
-		 gpointer user_data)
-{
-	/* g_print ("%s: %s",  */
-}
-
-static void
 metadata_callback (MafwRenderer *self,
 		   const gchar *object_id,
 		   GHashTable *metadata,
@@ -61,30 +53,11 @@ renderer_added_cb (MafwRegistry *registry,
 		const gchar *name =
 			mafw_extension_get_name (MAFW_EXTENSION(renderer));
 
-		g_print("[INFO] Renderer %s available.\n", name);
-
 		if (strcmp (name, WANTED_RENDERER) == 0) {
-			g_print ("[INFO]     Wanted renderer found!\n");
-			/* Connect to a few interesting signals */
-			/* g_signal_connect (renderer, */
-			/* 		  "media-changed", */
-			/* 		  G_CALLBACK (media_changed_cb), */
-			/* 		  NULL); */
 			g_signal_connect (renderer,
 					  "state-changed",
 					  G_CALLBACK (state_changed_cb),
 					  NULL);
-			/* g_signal_connect (renderer, */
-			/* 		  "metadata-changed", */
-			/* 		  G_CALLBACK (metadata_changed_cb), */
-			/* 		  NULL); */
-			/* g_signal_connect (renderer, */
-			/* 		  "error", */
-			/* 		  G_CALLBACK (error_cb), */
-			/* 		  NULL); */
-
-		} else {
-			g_print ("[INFO]     Not interesting. Skipping...\n");
 		}
 	}
 }
