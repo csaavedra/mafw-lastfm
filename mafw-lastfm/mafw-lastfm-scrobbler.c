@@ -11,8 +11,20 @@ G_DEFINE_TYPE (MafwLastfmScrobbler, mafw_lastfm_scrobbler, G_TYPE_OBJECT)
 #define GET_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MAFW_LASTFM_TYPE_SCROBBLER, MafwLastfmScrobblerPrivate))
 
+typedef enum {
+  MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE,
+  MAFW_LASTFM_SCROBBLER_HANDSHAKING,
+  MAFW_LASTFM_SCROBBLER_READY,
+  MAFW_LASTFM_SCROBBLER_SUBMITTING
+} MafwLastfmScrobblerStatus;
+
 struct _MafwLastfmScrobblerPrivate {
-    SoupSession *session;
+  SoupSession *session;
+  gchar *session_id;
+  gchar *np_url;
+  gchar *sub_url;
+
+  MafwLastfmScrobblerStatus status;
 };
 
 static void
@@ -46,6 +58,20 @@ mafw_lastfm_scrobbler_dispose (GObject *object)
     priv->session = NULL;
   }
 
+  if (priv->session_id != NULL) {
+    g_free (priv->session_id);
+    priv->session_id = NULL;
+  }
+  if (priv->np_url == NULL) {
+    g_free (priv->np_url);
+    priv->np_url = NULL;
+  }
+
+  if (priv->sub_url == NULL) {
+    g_free (priv->sub_url);
+    priv->sub_url = NULL;
+  }
+
   G_OBJECT_CLASS (mafw_lastfm_scrobbler_parent_class)->dispose (object);
 }
 
@@ -59,7 +85,6 @@ static void
 mafw_lastfm_scrobbler_class_init (MafwLastfmScrobblerClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
   g_type_class_add_private (klass, sizeof (MafwLastfmScrobblerPrivate));
 
   object_class->get_property = mafw_lastfm_scrobbler_get_property;
@@ -74,6 +99,12 @@ mafw_lastfm_scrobbler_init (MafwLastfmScrobbler *scrobbler)
   MafwLastfmScrobblerPrivate *priv = scrobbler->priv = GET_PRIVATE (scrobbler);
 
   priv->session = soup_session_async_new ();
+
+  priv->session_id = NULL;
+  priv->np_url = NULL;
+  priv->sub_url = NULL;
+
+  priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
 }
 
 MafwLastfmScrobbler*
@@ -132,6 +163,34 @@ get_auth_string (const gchar *password,
 	return md5;
 }
 
+static gboolean
+parse_handshake_response (MafwLastfmScrobbler *scrobbler,
+			  const gchar *response_data)
+{
+  gchar **response;
+
+  response = g_strsplit (response_data, "\n", 5);
+
+  if (g_str_has_prefix (response [0], "OK")) {
+    scrobbler->priv->session_id = response [1];
+    scrobbler->priv->np_url = response[2];
+    scrobbler->priv->sub_url = response[3];
+
+    /* We take ownership on the relevant parsed data, free the
+       array and response code. */
+    g_free (response [0]);
+    g_free (response [4]);
+    g_free (response);
+
+    return TRUE;
+  } else {
+    g_warning ("Couldn't handshake: %s", response [0]);
+    g_strfreev (response);
+
+    return FALSE;
+  }
+}
+
 static void
 handshake_cb (SoupSession *session,
 	       SoupMessage *message,
@@ -141,6 +200,11 @@ handshake_cb (SoupSession *session,
 
   if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
     g_print ("%s", message->response_body->data);
+    if (parse_handshake_response (scrobbler, message->response_body->data)) {
+      scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_READY;
+    } else {
+      scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
+    }
   }
 }
 
@@ -153,6 +217,10 @@ mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler,
 	glong timestamp;
 	gchar *handshake_url;
 	SoupMessage *message;
+
+	g_return_if_fail (scrobbler->priv->status != MAFW_LASTFM_SCROBBLER_HANDSHAKING);
+
+	scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_HANDSHAKING;
 
 	auth = get_auth_string (passwd, &timestamp);
 
