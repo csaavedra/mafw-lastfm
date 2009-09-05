@@ -1,6 +1,7 @@
 #include <glib.h>
 #include <libmafw/mafw.h>
 #include <libmafw-shared/mafw-shared.h>
+#include <string.h>
 
 #include "mafw-lastfm-scrobbler.h"
 
@@ -67,7 +68,6 @@ renderer_added_cb (MafwRegistry *registry,
 int main ()
 {
 	GError *error = NULL;
-        MafwRenderer *renderer = NULL;
 	MafwRegistry *registry;
 	GMainLoop *main_loop;
 	GList *renderers;
