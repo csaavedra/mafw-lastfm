@@ -2,6 +2,8 @@
 #include <libmafw/mafw.h>
 #include <libmafw-shared/mafw-shared.h>
 
+#include "mafw-lastfm-scrobbler.h"
+
 #define WANTED_RENDERER     "Mafw-Gst-Renderer"
 
 static const gchar *
@@ -69,8 +71,11 @@ int main ()
 	MafwRegistry *registry;
 	GMainLoop *main_loop;
 	GList *renderers;
+	MafwLastfmScrobbler *scrobbler;
 
 	g_type_init ();
+	if (!g_thread_supported ())
+		g_thread_init (NULL);
 
 	registry = MAFW_REGISTRY(mafw_registry_get_instance());
 	if (registry == NULL) {
@@ -95,6 +100,9 @@ int main ()
 				   G_OBJECT(renderers->data), NULL);
 		renderers = g_list_next(renderers);
 	}
+
+	scrobbler = mafw_lastfm_scrobbler_new ();
+	mafw_lastfm_scrobbler_handshake (scrobbler, "user", "password");
 
 	main_loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (main_loop);
