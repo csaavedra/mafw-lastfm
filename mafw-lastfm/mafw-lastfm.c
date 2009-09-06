@@ -7,11 +7,12 @@
 
 #define WANTED_RENDERER     "Mafw-Gst-Renderer"
 
-static const gchar *
+static gchar *
 mafw_metadata_lookup_string (GHashTable *table,
 			     const gchar *key)
 {
-	return g_value_get_string (g_hash_table_lookup (table, key));
+	return g_value_dup_string (mafw_metadata_first (table, key));
+}
 }
 
 static void
