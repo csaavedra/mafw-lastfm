@@ -13,6 +13,12 @@ mafw_metadata_lookup_string (GHashTable *table,
 {
 	return g_value_dup_string (mafw_metadata_first (table, key));
 }
+
+static int
+mafw_metadata_lookup_int (GHashTable *table,
+			  const gchar *key)
+{
+	return g_value_get_int (mafw_metadata_first (table, key));
 }
 
 static void
