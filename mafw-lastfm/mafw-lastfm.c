@@ -28,9 +28,22 @@ metadata_callback (MafwRenderer *self,
 		   gpointer user_data,
 		   const GError *error)
 {
-	g_print ("artist: %s\n", mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_ARTIST));
-	g_print ("title: %s\n", mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_TITLE));
-	g_print ("album: %s\n\n", mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_ALBUM));
+	MafwLastfmScrobbler *scrobbler;
+	MafwLastfmTrack *track;
+
+	scrobbler = MAFW_LASTFM_SCROBBLER (user_data);
+
+	track = mafw_lastfm_track_new ();
+
+	track->artist = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_ARTIST);
+	track->title = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_TITLE);
+	track->album = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_ALBUM);
+	track->number = mafw_metadata_lookup_int (metadata, MAFW_METADATA_KEY_TRACK);
+	track->length = mafw_metadata_lookup_int (metadata, MAFW_METADATA_KEY_DURATION);
+
+	mafw_lastfm_scrobbler_set_playing_now (scrobbler, track);
+
+	mafw_lastfm_track_free (track);
 }
 
 static void
