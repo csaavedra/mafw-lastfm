@@ -35,12 +35,23 @@ typedef struct {
   GObjectClass parent_class;
 } MafwLastfmScrobblerClass;
 
+typedef struct {
+  gchar *artist;
+  gchar *title;
+  gchar *album;
+  guint length;
+  guint number;
+} MafwLastfmTrack;
+
 GType mafw_lastfm_scrobbler_get_type (void);
 
 MafwLastfmScrobbler* mafw_lastfm_scrobbler_new (void);
 void                 mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler,
 						      const gchar *username,
 						      const gchar *passwd);
+MafwLastfmTrack * mafw_lastfm_track_new (void);
+void mafw_lastfm_track_free (MafwLastfmTrack *track);
+
 G_END_DECLS
 
 #endif /* _MAFW_LASTFM_SCROBBLER */

@@ -27,6 +27,9 @@ struct _MafwLastfmScrobblerPrivate {
   MafwLastfmScrobblerStatus status;
 };
 
+static MafwLastfmTrack *
+mafw_lastfm_track_encode (MafwLastfmTrack *track);
+
 static void
 mafw_lastfm_scrobbler_get_property (GObject *object, guint property_id,
                               GValue *value, GParamSpec *pspec)
@@ -237,4 +240,41 @@ mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler,
 				    scrobbler);
 	g_free (handshake_url);
 	g_free (auth);
+}
+
+MafwLastfmTrack *
+mafw_lastfm_track_new (void)
+{
+  return g_new0 (MafwLastfmTrack, 1);
+}
+
+void
+mafw_lastfm_track_free (MafwLastfmTrack *track)
+{
+  if (track == NULL)
+    return;
+
+  g_free (track->artist);
+  g_free (track->title);
+  g_free (track->album);
+
+  g_free (track);
+}
+
+#define EXTRA_URI_ENCODE_CHARS "&+"
+
+static MafwLastfmTrack *
+mafw_lastfm_track_encode (MafwLastfmTrack *track)
+{
+  MafwLastfmTrack *encoded;
+
+  encoded = mafw_lastfm_track_new ();
+
+  encoded->artist = soup_uri_encode (track->artist, EXTRA_URI_ENCODE_CHARS);
+  encoded->title = soup_uri_encode (track->title, EXTRA_URI_ENCODE_CHARS);
+  encoded->album = soup_uri_encode (track->album, EXTRA_URI_ENCODE_CHARS);
+  encoded->length = track->length;
+  encoded->number = track->number;
+
+  return encoded;
 }
