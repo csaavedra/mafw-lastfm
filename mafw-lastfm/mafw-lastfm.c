@@ -60,7 +60,7 @@ renderer_added_cb (MafwRegistry *registry,
 			g_signal_connect (renderer,
 					  "state-changed",
 					  G_CALLBACK (state_changed_cb),
-					  NULL);
+					  user_data);
 		}
 	}
 }
@@ -77,6 +77,8 @@ int main ()
 	if (!g_thread_supported ())
 		g_thread_init (NULL);
 
+	scrobbler = mafw_lastfm_scrobbler_new ();
+
 	registry = MAFW_REGISTRY(mafw_registry_get_instance());
 	if (registry == NULL) {
 		g_warning ("Failed to get register.\n");
@@ -91,17 +93,16 @@ int main ()
 
 	g_signal_connect (registry,
 			  "renderer_added",
-			  G_CALLBACK(renderer_added_cb), NULL);
+			  G_CALLBACK(renderer_added_cb), scrobbler);
 	/* Also, check for already started extensions */
 	renderers = mafw_registry_get_renderers(registry);
 	while (renderers)
 	{
 		renderer_added_cb (registry,
-				   G_OBJECT(renderers->data), NULL);
+				   G_OBJECT(renderers->data), scrobbler);
 		renderers = g_list_next(renderers);
 	}
 
-	scrobbler = mafw_lastfm_scrobbler_new ();
 	mafw_lastfm_scrobbler_handshake (scrobbler, "user", "password");
 
 	main_loop = g_main_loop_new (NULL, FALSE);
