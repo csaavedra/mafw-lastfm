@@ -1,5 +1,6 @@
 #include <glib.h>
 #include <libsoup/soup.h>
+#include <string.h>
 
 #include "mafw-lastfm-scrobbler.h"
 
@@ -115,21 +116,59 @@ mafw_lastfm_scrobbler_new (void)
 {
   return g_object_new (MAFW_LASTFM_TYPE_SCROBBLER, NULL);
 }
-
-/*void
-mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
-				       MafwLastfmTrack     *track)
-{
-
-}
-
-void
+/*
+  void
 mafw_lastfm_scrobbler_scrobble (MafwLastfmScrobbler *scrobbler,
 			        MafwLastfmTrack     *track)
 {
-
 }
 */
+
+static void
+set_playing_now_cb (SoupSession *session,
+		    SoupMessage *message,
+		    gpointer user_data)
+{
+  if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
+    g_print ("%s", message->response_body->data);
+  }
+}
+
+void
+mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
+				       MafwLastfmTrack     *track)
+{
+  gchar *post_data;
+  SoupMessage *message;
+  MafwLastfmTrack *encoded;
+
+  g_return_if_fail (MAFW_LASTFM_IS_SCROBBLER (scrobbler));
+  g_return_if_fail (track != NULL);
+  g_return_if_fail (scrobbler->priv->status == MAFW_LASTFM_SCROBBLER_READY);
+
+  encoded = mafw_lastfm_track_encode (track);
+  post_data = g_strdup_printf ("s=%s&a=%s&t=%s&b=%s&l=%u&n=%u&m=",
+			       scrobbler->priv->session_id,
+			       encoded->artist,
+			       encoded->title,
+			       encoded->album,
+			       encoded->length,
+			       encoded->number);
+  g_free (encoded);
+
+  message = soup_message_new ("POST",
+			      scrobbler->priv->np_url);
+  soup_message_set_request (message,
+			    "application/x-www-form-urlencoded",
+			    SOUP_MEMORY_TAKE,
+			    post_data,
+			    strlen (post_data));
+  soup_session_queue_message (scrobbler->priv->session,
+			      message,
+			      set_playing_now_cb,
+			      scrobbler);
+}
+
 /**
  * get_auth_string:
  * @password: a password to build the authorization string from

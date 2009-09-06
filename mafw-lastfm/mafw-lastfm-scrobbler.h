@@ -49,6 +49,10 @@ MafwLastfmScrobbler* mafw_lastfm_scrobbler_new (void);
 void                 mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler,
 						      const gchar *username,
 						      const gchar *passwd);
+void
+mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
+				       MafwLastfmTrack     *track);
+
 MafwLastfmTrack * mafw_lastfm_track_new (void);
 void mafw_lastfm_track_free (MafwLastfmTrack *track);
 
