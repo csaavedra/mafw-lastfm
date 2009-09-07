@@ -24,6 +24,7 @@ struct _MafwLastfmScrobblerPrivate {
   gchar *session_id;
   gchar *np_url;
   gchar *sub_url;
+  GQueue *scrobbling_queue;
 
   MafwLastfmScrobblerStatus status;
 };
@@ -76,6 +77,12 @@ mafw_lastfm_scrobbler_dispose (GObject *object)
     priv->sub_url = NULL;
   }
 
+  if (priv->scrobbling_queue) {
+    g_queue_foreach (priv->scrobbling_queue, (GFunc) mafw_lastfm_track_free, NULL);
+    g_queue_free (priv->scrobbling_queue);
+    priv->scrobbling_queue = NULL;
+  }
+
   G_OBJECT_CLASS (mafw_lastfm_scrobbler_parent_class)->dispose (object);
 }
 
@@ -107,6 +114,7 @@ mafw_lastfm_scrobbler_init (MafwLastfmScrobbler *scrobbler)
   priv->session_id = NULL;
   priv->np_url = NULL;
   priv->sub_url = NULL;
+  priv->scrobbling_queue = g_queue_new ();
 
   priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
 }
