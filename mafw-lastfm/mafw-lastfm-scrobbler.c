@@ -263,7 +263,7 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
 		     mafw_lastfm_track_encode (track));
 
   if (scrobbler->priv->timeout == 0) {
-    scrobbler->priv->timeout = g_timeout_add_seconds (15, on_timeout, scrobbler);
+    scrobbler->priv->timeout = g_timeout_add_seconds ((gint)track->length, on_timeout, scrobbler);
   }
 }
 
