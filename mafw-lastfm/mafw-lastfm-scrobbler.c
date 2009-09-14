@@ -25,6 +25,7 @@ struct _MafwLastfmScrobblerPrivate {
   gchar *np_url;
   gchar *sub_url;
   GQueue *scrobbling_queue;
+  guint timeout;
 
   MafwLastfmScrobblerStatus status;
 };
@@ -124,13 +125,65 @@ mafw_lastfm_scrobbler_new (void)
 {
   return g_object_new (MAFW_LASTFM_TYPE_SCROBBLER, NULL);
 }
-/*
-  void
-mafw_lastfm_scrobbler_scrobble (MafwLastfmScrobbler *scrobbler,
-			        MafwLastfmTrack     *track)
+
+static void
+scrobble_cb (SoupSession *session,
+	     SoupMessage *message,
+	     gpointer user_data)
 {
+  if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
+    g_print ("%s", message->response_body->data);
+  }
 }
-*/
+
+/**
+ * mafw_lastfm_scrobbler_scrobble_list:
+ * @scrobbler: a scrobbler
+ * @list: a %NULL-terminated list of %MafwLastfmTrack elements
+ *
+ * Submits a series of tracks from the list.
+ **/
+static void
+mafw_lastfm_scrobbler_scrobble_list (MafwLastfmScrobbler *scrobbler,
+				     GList *list)
+{
+  gint i;
+  GList *iter;
+  gchar *post_data;
+  gchar *track_data, *tmp;
+  MafwLastfmTrack *track;
+  SoupMessage *message;
+
+  post_data = g_strdup_printf ("s=%s", scrobbler->priv->session_id);
+
+  for (iter = list, i = 0; iter != NULL; iter = iter->next, i++) {
+    track = (MafwLastfmTrack *) iter->data;
+    track_data = g_strdup_printf ("&a[%i]=%s&t[%i]=%s&i[%i]=%li&o[%i]=%c&r[%i]=&l[%i]=%lld&b[%i]=%s&n[%i]=%i&m[%i]=",
+				  i, track->artist,
+				  i, track->title,
+				  i, track->timestamp,
+				  i, track->source,
+				  i, /* ratio skipped */
+				  i, track->length,
+				  i, track->album,
+				  i, track->number,
+				  i /* musicbrainz id skipped */);
+    tmp = post_data;
+    post_data = g_strconcat (tmp, track_data, NULL);
+    g_free (tmp);
+  }
+
+  message = soup_message_new ("POST", scrobbler->priv->sub_url);
+  soup_message_set_request (message,
+			    "application/x-www-form-urlencoded",
+			    SOUP_MEMORY_TAKE,
+			    post_data,
+			    strlen (post_data));
+  soup_session_queue_message (scrobbler->priv->session,
+			      message,
+			      scrobble_cb,
+			      scrobbler);
+}
 
 static void
 set_playing_now_cb (SoupSession *session,
@@ -175,6 +228,43 @@ mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
 			      message,
 			      set_playing_now_cb,
 			      scrobbler);
+}
+
+static gboolean
+on_timeout (gpointer data)
+{
+  MafwLastfmScrobbler *scrobbler;
+  MafwLastfmTrack *track;
+  GList *list = NULL;
+  gint tracks = 0;
+
+  scrobbler = MAFW_LASTFM_SCROBBLER (data);
+
+  while (!g_queue_is_empty (scrobbler->priv->scrobbling_queue) && tracks < 50) {
+    track = g_queue_pop_head (scrobbler->priv->scrobbling_queue);
+    list = g_list_append (list, track);
+    tracks ++;
+  }
+
+  if (list)
+  {
+    mafw_lastfm_scrobbler_scrobble_list (scrobbler, list);
+  }
+
+  scrobbler->priv->timeout = 0;
+  return FALSE;
+}
+
+void
+mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
+					MafwLastfmTrack *track)
+{
+  g_queue_push_tail (scrobbler->priv->scrobbling_queue,
+		     mafw_lastfm_track_encode (track));
+
+  if (scrobbler->priv->timeout == 0) {
+    scrobbler->priv->timeout = g_timeout_add_seconds (15, on_timeout, scrobbler);
+  }
 }
 
 /**
