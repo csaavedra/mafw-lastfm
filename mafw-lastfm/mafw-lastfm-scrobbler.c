@@ -256,15 +256,34 @@ on_timeout (gpointer data)
 }
 
 void
+mafw_lastfm_scrobbler_clean_queue (MafwLastfmScrobbler *scrobbler)
+{
+  glong timestamp = time (NULL);
+  MafwLastfmTrack *track;
+
+  track = (MafwLastfmTrack *) g_queue_peek_head (scrobbler->priv->scrobbling_queue);
+
+  if (timestamp - track->timestamp < MIN (240, track->length/2))
+  {
+    g_queue_pop_head (scrobbler->priv->scrobbling_queue);
+    mafw_lastfm_track_free (track);
+  }
+}
+
+void
 mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
 					MafwLastfmTrack *track)
 {
+  if (scrobbler->priv->timeout != 0) {
+    g_source_remove (scrobbler->priv->timeout);
+    mafw_lastfm_scrobbler_clean_queue (scrobbler);
+    on_timeout ((gpointer) scrobbler);
+  }
+
   g_queue_push_tail (scrobbler->priv->scrobbling_queue,
 		     mafw_lastfm_track_encode (track));
 
-  if (scrobbler->priv->timeout == 0) {
-    scrobbler->priv->timeout = g_timeout_add_seconds ((gint)track->length, on_timeout, scrobbler);
-  }
+  scrobbler->priv->timeout = g_timeout_add_seconds ((gint)track->length, on_timeout, scrobbler);
 }
 
 /**
