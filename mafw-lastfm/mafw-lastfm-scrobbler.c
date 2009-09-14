@@ -322,6 +322,8 @@ mafw_lastfm_track_encode (MafwLastfmTrack *track)
   encoded->album = soup_uri_encode (track->album, EXTRA_URI_ENCODE_CHARS);
   encoded->length = track->length;
   encoded->number = track->number;
+  encoded->timestamp = track->timestamp;
+  encoded->source = track->source;
 
   return encoded;
 }

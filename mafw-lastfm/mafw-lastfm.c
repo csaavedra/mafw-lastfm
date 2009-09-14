@@ -30,6 +30,9 @@ metadata_callback (MafwRenderer *self,
 {
 	MafwLastfmScrobbler *scrobbler;
 	MafwLastfmTrack *track;
+	GTimeVal time_val;
+
+	g_get_current_time (&time_val);
 
 	scrobbler = MAFW_LASTFM_SCROBBLER (user_data);
 
@@ -37,6 +40,9 @@ metadata_callback (MafwRenderer *self,
 
 	track->artist = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_ARTIST);
 	track->title = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_TITLE);
+	track->timestamp = time_val.tv_sec; /* This should probably be obtained in the
+					       state changed cb */
+	track->source = 'P';
 	track->album = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_ALBUM);
 	track->number = mafw_metadata_lookup_int (metadata, MAFW_METADATA_KEY_TRACK);
 	track->length = g_value_get_int64 (mafw_metadata_first (metadata, MAFW_METADATA_KEY_DURATION));

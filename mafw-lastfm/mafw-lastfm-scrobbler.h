@@ -39,8 +39,10 @@ typedef struct {
   gchar *artist;
   gchar *title;
   gchar *album;
-  guint number;
+  glong timestamp;
+  gchar source;
   gint64 length;
+  gint number;
 } MafwLastfmTrack;
 
 GType mafw_lastfm_scrobbler_get_type (void);
