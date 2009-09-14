@@ -39,8 +39,7 @@ metadata_callback (MafwRenderer *self,
 	track->title = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_TITLE);
 	track->album = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_ALBUM);
 	track->number = mafw_metadata_lookup_int (metadata, MAFW_METADATA_KEY_TRACK);
-	track->length = mafw_metadata_lookup_int (metadata, MAFW_METADATA_KEY_DURATION);
-
+	track->length = g_value_get_int64 (mafw_metadata_first (metadata, MAFW_METADATA_KEY_DURATION));
 	mafw_lastfm_scrobbler_set_playing_now (scrobbler, track);
 
 	mafw_lastfm_track_free (track);

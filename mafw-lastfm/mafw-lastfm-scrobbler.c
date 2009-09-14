@@ -155,7 +155,7 @@ mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
   g_return_if_fail (scrobbler->priv->status == MAFW_LASTFM_SCROBBLER_READY);
 
   encoded = mafw_lastfm_track_encode (track);
-  post_data = g_strdup_printf ("s=%s&a=%s&t=%s&b=%s&l=%u&n=%u&m=",
+  post_data = g_strdup_printf ("s=%s&a=%s&t=%s&b=%s&l=%lli&n=%u&m=",
 			       scrobbler->priv->session_id,
 			       encoded->artist,
 			       encoded->title,
