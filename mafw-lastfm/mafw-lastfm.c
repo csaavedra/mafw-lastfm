@@ -91,6 +91,54 @@ renderer_added_cb (MafwRegistry *registry,
 	}
 }
 
+#define MAFW_LASTFM_CREDENTIALS_FILE ".mafw-lastfm"
+
+static gboolean
+get_credentials (gchar **username,
+		 gchar **pw_md5)
+{
+	gchar *file = g_build_filename (g_get_home_dir (),
+					MAFW_LASTFM_CREDENTIALS_FILE, NULL);
+	GKeyFile *keyfile;
+	GError *error = NULL;
+
+	keyfile = g_key_file_new ();
+
+	if (!g_key_file_load_from_file (keyfile, file, G_KEY_FILE_NONE, &error))
+	{
+		if (error)
+		{
+			g_warning ("Error loading credentials file: %s",
+				   error->message);
+			g_error_free (error);
+		}
+
+		g_key_file_free (keyfile);
+
+		return FALSE;
+	}
+
+	*username = g_key_file_get_string (keyfile,
+					   "Credentials", "username", NULL);
+	*pw_md5 = g_key_file_get_string (keyfile,
+					 "Credentials", "password", NULL);
+
+	if (*username == NULL || *pw_md5 == NULL)
+	{
+		g_warning ("Error loading username or password md5");
+
+		g_free (*username);
+		g_free (*pw_md5);
+		g_key_file_free (keyfile);
+
+		return FALSE;
+	}
+
+	g_key_file_free (keyfile);
+
+	return TRUE;
+}
+
 int main ()
 {
 	GError *error = NULL;
@@ -98,6 +146,7 @@ int main ()
 	GMainLoop *main_loop;
 	GList *renderers;
 	MafwLastfmScrobbler *scrobbler;
+	gchar *username, *md5passwd;
 
 	g_type_init ();
 	if (!g_thread_supported ())
@@ -129,7 +178,8 @@ int main ()
 		renderers = g_list_next(renderers);
 	}
 
-	mafw_lastfm_scrobbler_handshake (scrobbler, "user", "password");
+	if (get_credentials (&username, &md5passwd))
+	    mafw_lastfm_scrobbler_handshake (scrobbler, username, md5passwd);
 
 	main_loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (main_loop);

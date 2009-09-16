@@ -290,18 +290,18 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
 
 /**
  * get_auth_string:
- * @password: a password to build the authorization string from
+ * @md5password: the md5sum of the password to build the authorization string from
  * @timestamp: a pointer to store the used timestamp.
  *
  * Builds an authorization string based on the password
  * and the current epoch time. The Last.fm authorization string
- * is of the form md5 (md5 (@password) + @timestamp).
+ * is of the form md5 (md5 (password) + @timestamp).
  *
  * Returns: a newly allocated string with the authorization md5sum,
  * to be used together with @timestamp.
  **/
 static gchar *
-get_auth_string (const gchar *password,
+get_auth_string (const gchar *md5passwd,
 		 glong *timestamp)
 {
 	GTimeVal time_val;
@@ -311,10 +311,8 @@ get_auth_string (const gchar *password,
 	g_return_val_if_fail (timestamp != NULL, NULL);
 
 	g_get_current_time (&time_val);
-	md5 = g_compute_checksum_for_string (G_CHECKSUM_MD5, password, -1);
 
-	auth = g_strdup_printf ("%s%li", md5, time_val.tv_sec);
-	g_free (md5);
+	auth = g_strdup_printf ("%s%li", md5passwd, time_val.tv_sec);
 
 	*timestamp = time_val.tv_sec;
 
@@ -372,7 +370,7 @@ handshake_cb (SoupSession *session,
 void
 mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler,
 				 const gchar *username,
-				 const gchar *passwd)
+				 const gchar *md5passwd)
 {
 	gchar *auth;
 	glong timestamp;
@@ -383,7 +381,7 @@ mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler,
 
 	scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_HANDSHAKING;
 
-	auth = get_auth_string (passwd, &timestamp);
+	auth = get_auth_string (md5passwd, &timestamp);
 
 	handshake_url = g_strdup_printf ("http://post.audioscrobbler.com/?hs=true&p=1.2.1&c=%s&v=%s&u=%s&t=%li&a=%s",
 					 CLIENT_ID, CLIENT_VERSION,
