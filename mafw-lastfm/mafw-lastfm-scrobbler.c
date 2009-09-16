@@ -280,6 +280,8 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
     on_timeout ((gpointer) scrobbler);
   }
 
+  mafw_lastfm_scrobbler_set_playing_now (scrobbler, track);
+
   g_queue_push_tail (scrobbler->priv->scrobbling_queue,
 		     mafw_lastfm_track_encode (track));
 
