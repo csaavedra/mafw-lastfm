@@ -1,0 +1,2 @@
+SUBDIRS = mafw-lastfm
+
