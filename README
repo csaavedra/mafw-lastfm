@@ -1,0 +1,37 @@
+mafw-lastfm
+-----------
+
+mafw-lastfm is a small daemon that scrobbles your listening habits to last.fm.
+
+setting up
+----------
+
+Create a file $HOME/.mafw-lastfm with the following contents:
+
+       [Credentials]
+       username=[your lastfm username]
+       password=[a md5sum of your lastfm password]
+
+For instance, for a user named 'jamesthehacker' with password 'james':
+
+	[Credentials]
+	username=jamesthehacker
+	password=b4cc344d25a2efe540adbf2678e2304c
+
+To generate the md5sum of your password, you can simply run
+
+   $ echo password | md5sum
+
+
+limitations
+-----------
+
+mafw-lastfm is in an early stage and has plenty of limitations:
+
+- Handshaking is done on the daemon startup, if there's no internet connection, you'll
+  need to restart it.
+- Songs are not enqueued while you are offline.
+- Songs are not serialized, so you'll loose the tracks you've listened if you restart
+  the process.
+
+These features will come with time.
