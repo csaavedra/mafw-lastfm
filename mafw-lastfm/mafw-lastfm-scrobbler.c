@@ -4,8 +4,8 @@
 
 #include "mafw-lastfm-scrobbler.h"
 
-#define CLIENT_ID "tst"
-#define CLIENT_VERSION "1.0"
+#define CLIENT_ID "maf"
+#define CLIENT_VERSION "0.0.1"
 
 G_DEFINE_TYPE (MafwLastfmScrobbler, mafw_lastfm_scrobbler, G_TYPE_OBJECT)
 
