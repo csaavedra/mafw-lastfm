@@ -1,0 +1,20 @@
+Source: mafw-lastfm
+Section: sound
+Priority: optional
+Maintainer: Claudio Saavedra <csaavedra@igalia.com>
+Build-Depends: debhelper (>= 5), pkg-config, cdbs, libsoup2.4-dev, libglib2.0-dev, libmafw-shared0-dev, libmafw0-dev
+Standards-Version: 3.8.3
+
+Package: mafw-lastfm
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Description: last.fm scrobbler for MAFW
+ mafw-lastfm is a last.fm scrobbler for MAFW, the Maemo Multimedia Application
+ Framework. It runs as a daemon and scrobbles whatever you listen using a MAFW
+ capable media player.
+
+Package: mafw-lastfm-dbg
+Section: devel
+Architecture: any
+Depends: ${misc:Depends}, mafw-lastfm (= ${binary:Version})
+Description: Debug symbols for mafw-lastfm

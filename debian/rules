@@ -1,0 +1,9 @@
+#!/usr/bin/make -f
+
+include /usr/share/cdbs/1/class/autotools.mk
+include /usr/share/cdbs/1/rules/debhelper.mk
+
+config.status: $(DEB_SRCDIR)/configure
+
+$(DEB_SRCDIR)/configure:
+	AUTOGEN_SUBDIR_MODE=1 NOCONFIGURE=yes $(DEB_SRCDIR)/autogen.sh
