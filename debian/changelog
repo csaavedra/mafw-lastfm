@@ -1,6 +1,8 @@
 mafw-lastfm (0.0.1~unreleased) unstable; urgency=low
 
-  * Unreleased test package
+  * Unreleased test package.
+  * Install a Xsession.post script to start the daemon after the desktop
+    is ready. Use dsmetool to keep it alive.
 
- -- Claudio Saavedra <csaavedra@igalia.com>  Thu, 17 Sep 2009 11:48:01 +0300
+ -- Claudio Saavedra <csaavedra@igalia.com>  Thu, 17 Sep 2009 16:05:41 +0300
 

@@ -7,3 +7,6 @@ config.status: $(DEB_SRCDIR)/configure
 
 $(DEB_SRCDIR)/configure:
 	AUTOGEN_SUBDIR_MODE=1 NOCONFIGURE=yes $(DEB_SRCDIR)/autogen.sh
+
+install/mafw-lastfm::
+	dh_installxsession -u 'post 85'
