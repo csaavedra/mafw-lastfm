@@ -1,6 +1,8 @@
 AC_INIT([mafw-lastfm], [0.0.1], [csaavedra@igalia.com])
 AM_INIT_AUTOMAKE
 
+AM_MAINTAINER_MODE
+
 AC_CONFIG_SRCDIR([mafw-lastfm/mafw-lastfm.c])
 AC_CONFIG_HEADERS([config.h])
 
