@@ -48,6 +48,8 @@ struct _MafwLastfmScrobblerPrivate {
 
   guint retry_interval;
   SoupMessage *retry_message;
+  GList *scrobble_list;
+
   MafwLastfmScrobblerStatus status;
 
   gchar *username;
@@ -156,6 +158,8 @@ mafw_lastfm_scrobbler_init (MafwLastfmScrobbler *scrobbler)
 
   priv->retry_message = NULL;
   priv->retry_interval = 5;
+  priv->scrobble_list = NULL;
+
   priv->username = NULL;
   priv->md5password = NULL;
 
@@ -185,12 +189,32 @@ mafw_lastfm_scrobbler_set_credentials (MafwLastfmScrobbler *scrobbler,
 }
 
 static void
+mafw_lastfm_scrobbler_scrobbling_failed (MafwLastfmScrobbler *scrobbler)
+{
+  GList *iter;
+
+  for (iter = g_list_last (scrobbler->priv->scrobble_list);
+       iter != NULL; iter = iter->prev)
+  {
+    g_queue_push_head (scrobbler->priv->scrobbling_queue,
+		       iter->data);
+  }
+  g_list_free (scrobbler->priv->scrobble_list);
+  scrobbler->priv->scrobble_list = NULL;
+  scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
+
+  mafw_lastfm_scrobbler_handshake (scrobbler);
+}
+
+static void
 scrobble_cb (SoupSession *session,
 	     SoupMessage *message,
 	     gpointer user_data)
 {
   if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
     g_print ("%s", message->response_body->data);
+  } else {
+    mafw_lastfm_scrobbler_scrobbling_failed (MAFW_LASTFM_SCROBBLER (user_data));
   }
 }
 
@@ -311,6 +335,7 @@ scrobble_timeout (gpointer data)
 
   if (list)
   {
+    scrobbler->priv->scrobble_list = list;
     mafw_lastfm_scrobbler_scrobble_list (scrobbler, list);
   }
 
