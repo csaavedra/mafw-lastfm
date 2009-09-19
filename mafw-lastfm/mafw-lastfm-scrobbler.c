@@ -298,6 +298,11 @@ scrobble_timeout (gpointer data)
 
   scrobbler = MAFW_LASTFM_SCROBBLER (data);
 
+  if (scrobbler->priv->status != MAFW_LASTFM_SCROBBLER_READY) {
+    scrobbler->priv->timeout = 0;
+    return FALSE;
+  }
+
   while (!g_queue_is_empty (scrobbler->priv->scrobbling_queue) && tracks < 50) {
     track = g_queue_pop_head (scrobbler->priv->scrobbling_queue);
     list = g_list_append (list, track);
@@ -338,7 +343,9 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
     scrobble_timeout ((gpointer) scrobbler);
   }
 
-  mafw_lastfm_scrobbler_set_playing_now (scrobbler, track);
+  if (scrobbler->priv->status == MAFW_LASTFM_SCROBBLER_READY) {
+    mafw_lastfm_scrobbler_set_playing_now (scrobbler, track);
+  }
 
   g_queue_push_tail (scrobbler->priv->scrobbling_queue,
 		     mafw_lastfm_track_encode (track));
