@@ -280,11 +280,11 @@ mafw_lastfm_scrobbler_clean_queue (MafwLastfmScrobbler *scrobbler)
   glong timestamp = time (NULL);
   MafwLastfmTrack *track;
 
-  track = (MafwLastfmTrack *) g_queue_peek_head (scrobbler->priv->scrobbling_queue);
+  track = (MafwLastfmTrack *) g_queue_peek_tail (scrobbler->priv->scrobbling_queue);
 
   if (timestamp - track->timestamp < MIN (240, track->length/2))
   {
-    g_queue_pop_head (scrobbler->priv->scrobbling_queue);
+    g_queue_pop_tail (scrobbler->priv->scrobbling_queue);
     mafw_lastfm_track_free (track);
   }
 }
