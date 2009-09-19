@@ -212,7 +212,7 @@ scrobble_cb (SoupSession *session,
 	     gpointer user_data)
 {
   if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
-    g_print ("%s", message->response_body->data);
+    g_print ("Scrobble: %s", message->response_body->data);
   } else {
     mafw_lastfm_scrobbler_scrobbling_failed (MAFW_LASTFM_SCROBBLER (user_data));
   }
@@ -273,7 +273,7 @@ set_playing_now_cb (SoupSession *session,
 		    gpointer user_data)
 {
   if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
-    g_print ("%s", message->response_body->data);
+    g_print ("Playing-now: %s", message->response_body->data);
   }
 }
 
