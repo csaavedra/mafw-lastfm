@@ -46,6 +46,8 @@ struct _MafwLastfmScrobblerPrivate {
   GQueue *scrobbling_queue;
   guint timeout;
 
+  guint retry_interval;
+  SoupMessage *retry_message;
   MafwLastfmScrobblerStatus status;
 
   gchar *username;
@@ -54,6 +56,11 @@ struct _MafwLastfmScrobblerPrivate {
 
 static MafwLastfmTrack *
 mafw_lastfm_track_encode (MafwLastfmTrack *track);
+
+
+static void handshake_cb (SoupSession *session,
+			  SoupMessage *message,
+			  gpointer user_data);
 
 static void
 mafw_lastfm_scrobbler_get_property (GObject *object, guint property_id,
@@ -147,6 +154,8 @@ mafw_lastfm_scrobbler_init (MafwLastfmScrobbler *scrobbler)
   priv->sub_url = NULL;
   priv->scrobbling_queue = g_queue_new ();
 
+  priv->retry_message = NULL;
+  priv->retry_interval = 5;
   priv->username = NULL;
   priv->md5password = NULL;
 
@@ -399,6 +408,18 @@ parse_handshake_response (MafwLastfmScrobbler *scrobbler,
   }
 }
 
+static gboolean
+retry_queue_message (gpointer userdata)
+{
+  MafwLastfmScrobblerPrivate *priv = MAFW_LASTFM_SCROBBLER (userdata)->priv;
+  g_print ("retrying to queue message\n");
+  soup_session_queue_message (priv->session,
+			      priv->retry_message,
+			      handshake_cb,
+			      MAFW_LASTFM_SCROBBLER (userdata));
+  return FALSE;
+}
+
 static void
 handshake_cb (SoupSession *session,
 	       SoupMessage *message,
@@ -410,9 +431,17 @@ handshake_cb (SoupSession *session,
     g_print ("%s", message->response_body->data);
     if (parse_handshake_response (scrobbler, message->response_body->data)) {
       scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_READY;
-    } else {
-      scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
+      scrobbler->priv->retry_interval = 5;
     }
+  } else {
+    g_print ("message failed, trying to send in %d seconds.\n", scrobbler->priv->retry_interval);
+    scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
+    scrobbler->priv->retry_message = g_object_ref (message);
+    g_timeout_add_seconds (scrobbler->priv->retry_interval,
+			   retry_queue_message,
+			   scrobbler);
+    if (scrobbler->priv->retry_interval < 20)
+      scrobbler->priv->retry_interval *= 2;
   }
 }
 
