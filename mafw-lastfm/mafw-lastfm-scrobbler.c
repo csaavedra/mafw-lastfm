@@ -250,7 +250,7 @@ mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
 }
 
 static gboolean
-on_timeout (gpointer data)
+scrobble_timeout (gpointer data)
 {
   MafwLastfmScrobbler *scrobbler;
   MafwLastfmTrack *track;
@@ -296,7 +296,7 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
   if (scrobbler->priv->timeout != 0) {
     g_source_remove (scrobbler->priv->timeout);
     mafw_lastfm_scrobbler_clean_queue (scrobbler);
-    on_timeout ((gpointer) scrobbler);
+    scrobble_timeout ((gpointer) scrobbler);
   }
 
   mafw_lastfm_scrobbler_set_playing_now (scrobbler, track);
@@ -304,7 +304,7 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
   g_queue_push_tail (scrobbler->priv->scrobbling_queue,
 		     mafw_lastfm_track_encode (track));
 
-  scrobbler->priv->timeout = g_timeout_add_seconds ((gint)track->length, on_timeout, scrobbler);
+  scrobbler->priv->timeout = g_timeout_add_seconds ((gint)track->length, scrobble_timeout, scrobbler);
 }
 
 /**
