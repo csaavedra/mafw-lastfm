@@ -47,6 +47,9 @@ struct _MafwLastfmScrobblerPrivate {
   guint timeout;
 
   MafwLastfmScrobblerStatus status;
+
+  gchar *username;
+  gchar *md5password;
 };
 
 static MafwLastfmTrack *
@@ -103,6 +106,14 @@ mafw_lastfm_scrobbler_dispose (GObject *object)
     priv->scrobbling_queue = NULL;
   }
 
+  if (priv->username) {
+    g_free (priv->username);
+  }
+
+  if (priv->md5password) {
+    g_free (priv->md5password);
+  }
+
   G_OBJECT_CLASS (mafw_lastfm_scrobbler_parent_class)->dispose (object);
 }
 
@@ -136,6 +147,9 @@ mafw_lastfm_scrobbler_init (MafwLastfmScrobbler *scrobbler)
   priv->sub_url = NULL;
   priv->scrobbling_queue = g_queue_new ();
 
+  priv->username = NULL;
+  priv->md5password = NULL;
+
   priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
 }
 
@@ -143,6 +157,22 @@ MafwLastfmScrobbler*
 mafw_lastfm_scrobbler_new (void)
 {
   return g_object_new (MAFW_LASTFM_TYPE_SCROBBLER, NULL);
+}
+
+void
+mafw_lastfm_scrobbler_set_credentials (MafwLastfmScrobbler *scrobbler,
+				       const gchar *username,
+				       const gchar *md5password)
+{
+  if (scrobbler->priv->username) {
+    g_free (scrobbler->priv->username);
+  }
+  scrobbler->priv->username = g_strdup (username);
+
+  if (scrobbler->priv->md5password) {
+    g_free (scrobbler->priv->md5password);
+  }
+  scrobbler->priv->md5password = g_strdup (md5password);
 }
 
 static void
@@ -387,9 +417,7 @@ handshake_cb (SoupSession *session,
 }
 
 void
-mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler,
-				 const gchar *username,
-				 const gchar *md5passwd)
+mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler)
 {
 	gchar *auth;
 	glong timestamp;
@@ -397,14 +425,15 @@ mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler,
 	SoupMessage *message;
 
 	g_return_if_fail (scrobbler->priv->status != MAFW_LASTFM_SCROBBLER_HANDSHAKING);
+	g_return_if_fail (scrobbler->priv->username != NULL || scrobbler->priv->md5password != NULL);
 
 	scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_HANDSHAKING;
 
-	auth = get_auth_string (md5passwd, &timestamp);
+	auth = get_auth_string (scrobbler->priv->md5password, &timestamp);
 
 	handshake_url = g_strdup_printf ("http://post.audioscrobbler.com/?hs=true&p=1.2.1&c=%s&v=%s&u=%s&t=%li&a=%s",
 					 CLIENT_ID, CLIENT_VERSION,
-					 username,
+					 scrobbler->priv->username,
 					 timestamp,
 					 auth);
 

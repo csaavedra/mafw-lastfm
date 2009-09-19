@@ -197,8 +197,10 @@ int main ()
 		renderers = g_list_next(renderers);
 	}
 
-	if (get_credentials (&username, &md5passwd))
-	    mafw_lastfm_scrobbler_handshake (scrobbler, username, md5passwd);
+	if (get_credentials (&username, &md5passwd)) {
+	    mafw_lastfm_scrobbler_set_credentials (scrobbler, username, md5passwd);
+	    mafw_lastfm_scrobbler_handshake (scrobbler);
+	}
 
 	main_loop = g_main_loop_new (NULL, FALSE);
 	g_main_loop_run (main_loop);

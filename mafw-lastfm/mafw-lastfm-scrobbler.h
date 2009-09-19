@@ -65,9 +65,13 @@ typedef struct {
 GType mafw_lastfm_scrobbler_get_type (void);
 
 MafwLastfmScrobbler* mafw_lastfm_scrobbler_new (void);
-void                 mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler,
-						      const gchar *username,
-						      const gchar *passwd);
+
+void                 mafw_lastfm_scrobbler_set_credentials (MafwLastfmScrobbler *scrobbler,
+							    const gchar *username,
+							    const gchar *passwd);
+
+void                 mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler);
+
 void
 mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
 				       MafwLastfmTrack     *track);
