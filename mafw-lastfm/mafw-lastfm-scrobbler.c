@@ -535,9 +535,15 @@ mafw_lastfm_track_encode (MafwLastfmTrack *track)
 
   encoded = mafw_lastfm_track_new ();
 
-  encoded->artist = soup_uri_encode (track->artist, EXTRA_URI_ENCODE_CHARS);
-  encoded->title = soup_uri_encode (track->title, EXTRA_URI_ENCODE_CHARS);
-  encoded->album = soup_uri_encode (track->album, EXTRA_URI_ENCODE_CHARS);
+  if (track->artist != NULL)
+    encoded->artist = soup_uri_encode (track->artist, EXTRA_URI_ENCODE_CHARS);
+
+  if (track->title != NULL)
+    encoded->title = soup_uri_encode (track->title, EXTRA_URI_ENCODE_CHARS);
+
+  if (track->album != NULL)
+    encoded->album = soup_uri_encode (track->album, EXTRA_URI_ENCODE_CHARS);
+
   encoded->length = track->length;
   encoded->number = track->number;
   encoded->timestamp = track->timestamp;
