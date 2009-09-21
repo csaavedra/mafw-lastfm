@@ -59,6 +59,10 @@ metadata_callback (MafwRenderer *self,
 
 	track->artist = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_ARTIST);
 	track->title = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_TITLE);
+
+	if (track->artist == NULL || track->title == NULL)
+		return;
+
 	track->timestamp = time_val.tv_sec; /* This should probably be obtained in the
 					       state changed cb */
 	track->source = 'P';
