@@ -28,9 +28,6 @@ limitations
 
 mafw-lastfm is in an early stage and has plenty of limitations:
 
-- Handshaking is done on the daemon startup, if there's no internet connection, you'll
-  need to restart it.
-- Songs are not enqueued while you are offline.
 - Songs are not serialized, so you'll loose the tracks you've listened if you restart
   the process.
 
