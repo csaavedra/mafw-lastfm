@@ -86,10 +86,8 @@ state_changed_cb(MafwRenderer *renderer, MafwPlayState state,
 							    user_data);
                         break;
                 case Paused:
-                        /* Enable Resume button */
                         break;
                 case Stopped:
-                        /* Disable Pause/Resume button */
                         break;
                 default:
                         break;
