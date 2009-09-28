@@ -88,6 +88,7 @@ state_changed_cb(MafwRenderer *renderer, MafwPlayState state,
                 case Paused:
                         break;
                 case Stopped:
+			mafw_lastfm_scrobbler_flush_queue (MAFW_LASTFM_SCROBBLER (user_data));
                         break;
                 default:
                         break;
