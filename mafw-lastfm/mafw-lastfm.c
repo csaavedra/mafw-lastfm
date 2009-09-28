@@ -86,10 +86,9 @@ state_changed_cb(MafwRenderer *renderer, MafwPlayState state,
 							    user_data);
                         break;
                 case Paused:
-                        /* Enable Resume button */
                         break;
                 case Stopped:
-                        /* Disable Pause/Resume button */
+			mafw_lastfm_scrobbler_flush_queue (MAFW_LASTFM_SCROBBLER (user_data));
                         break;
                 default:
                         break;
