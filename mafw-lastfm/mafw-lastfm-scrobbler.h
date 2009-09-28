@@ -79,6 +79,9 @@ void
 mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
 					MafwLastfmTrack *track);
 
+void
+mafw_lastfm_scrobbler_flush_queue (MafwLastfmScrobbler *scrobbler);
+
 MafwLastfmTrack * mafw_lastfm_track_new (void);
 void mafw_lastfm_track_free (MafwLastfmTrack *track);
 
