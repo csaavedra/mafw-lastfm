@@ -1,5 +1,5 @@
 Source: mafw-lastfm
-Section: sound
+Section: user/multimedia
 Priority: optional
 Maintainer: Claudio Saavedra <csaavedra@igalia.com>
 Build-Depends: debhelper (>= 5), pkg-config, cdbs, libsoup2.4-dev, libglib2.0-dev, libmafw-shared0-dev, libmafw0-dev
