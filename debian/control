@@ -8,10 +8,9 @@ Standards-Version: 3.8.3
 Package: mafw-lastfm
 Architecture: any
 Depends: ${misc:Depends}, ${shlibs:Depends}
-Description: last.fm scrobbler for MAFW
- mafw-lastfm is a last.fm scrobbler for MAFW, the Maemo Multimedia Application
- Framework. It runs as a daemon and scrobbles whatever you listen using a MAFW
- capable media player.
+Description: last.fm scrobbler for the N900
+ mafw-lastfm is a last.fm scrobbler for Maemo devices using
+ the Media Application Framework, like the N900.
 
 Package: mafw-lastfm-dbg
 Section: devel
