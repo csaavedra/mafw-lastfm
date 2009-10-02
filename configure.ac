@@ -1,4 +1,4 @@
-AC_INIT([mafw-lastfm], [0.0.1], [csaavedra@igalia.com])
+AC_INIT([mafw-lastfm], [0.0.1], [mafw-lastfm-devel@garage.maemo.org])
 AM_INIT_AUTOMAKE
 
 AM_MAINTAINER_MODE
