@@ -23,12 +23,40 @@ To generate the md5sum of your password, you can simply run
    $ echo password | md5sum
 
 
+project page and source packages
+--------------------------------
+
+mafw-lastfm has a garage.maemo.org page, where you can find the latest releases:
+
+  https://garage.maemo.org/projects/mafw-lastfm/
+
+mailing list
+------------
+
+mfaw-lastfm development (and users, why not) mailing list is <mafw-lastfm-devel@garage.maemo.org>.
+You can suscribe in
+
+  https://garage.maemo.org/mailman/listinfo/mafw-lastfm-devel
+
+source code
+-----------
+
+The source code is kept in a gitorious project. The web interface is
+
+    http://gitorious.org/mafw-lastfm
+
+You can clone it from
+
+    git clone git://gitorious.org/mafw-lastfm/mafw-lastfm.git
+
+
 limitations
 -----------
 
 mafw-lastfm is in an early stage and has plenty of limitations:
 
 - Songs are not serialized, so you'll loose the tracks you've listened if you restart
-  the process.
+  the daemon.
+- Pausing a track will still scrobble it. Resuming it will likely scrobble it again.
 
 These features will come with time.

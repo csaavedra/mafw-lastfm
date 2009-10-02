@@ -1,0 +1,5 @@
+[0.0.1 Release]
+
+- Initial release
+- Set now-playing, and scrobble.
+- Credentials stored in $HOME/.mfaw-lastfm
