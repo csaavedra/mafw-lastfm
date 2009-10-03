@@ -189,7 +189,7 @@ int main ()
 	}
 
 	g_signal_connect (registry,
-			  "renderer_added",
+			  "renderer-added",
 			  G_CALLBACK(renderer_added_cb), scrobbler);
 	/* Also, check for already started extensions */
 	renderers = mafw_registry_get_renderers(registry);
