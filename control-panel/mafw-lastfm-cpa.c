@@ -23,9 +23,27 @@ load_username (const gchar *file)
 }
 
 static void
-save_credentials (const gchar *username,
+save_credentials (const gchar *file,
+		  const gchar *username,
 		  const gchar *password)
 {
+	gchar *md5passwd;
+	GKeyFile *keyfile;
+
+	keyfile = g_key_file_new ();
+	md5passwd = g_compute_checksum_for_string (G_CHECKSUM_MD5,
+						   password, -1);
+
+	g_key_file_set_string (keyfile, "Credentials",
+			       "username", username);
+	g_key_file_set_string (keyfile, "Credentials",
+			       "password", md5passwd);
+
+	g_file_set_contents (file,
+			     g_key_file_to_data (keyfile, NULL, NULL),
+			     -1, NULL);
+	g_free (md5passwd);
+	g_key_file_free (keyfile);
 }
 
 osso_return_t
@@ -86,7 +104,8 @@ execute(osso_context_t *osso, gpointer data, gboolean user_activated)
 
 	if (GTK_RESPONSE_OK == gtk_dialog_run (GTK_DIALOG(dialog)))
 	{
-		save_credentials (gtk_entry_get_text (GTK_ENTRY (username)),
+		save_credentials (settings_file,
+				  gtk_entry_get_text (GTK_ENTRY (username)),
 				  gtk_entry_get_text (GTK_ENTRY (password)));
 	}
 
