@@ -45,7 +45,9 @@ execute(osso_context_t *osso, gpointer data, gboolean user_activated)
 
 	label_password = gtk_label_new ("Password:");
 	password = hildon_entry_new (HILDON_SIZE_AUTO | HILDON_SIZE_FINGER_HEIGHT);
-
+	hildon_gtk_entry_set_input_mode (GTK_ENTRY (password),
+					 HILDON_GTK_INPUT_MODE_FULL |
+					 HILDON_GTK_INPUT_MODE_INVISIBLE);
 	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
 	hbox = gtk_hbox_new (TRUE, 0);
