@@ -18,11 +18,25 @@ PKG_CHECK_MODULES([MAFW_LASTFM], [glib-2.0 >= $GLIB_VERSION
 AC_SUBST(MAFW_LASTFM_CFLAGS)
 AC_SUBST(MAFW_LASTFM_LIBS)
 
+HILDON_VERSION=2.1.30
+GTK_VERSION=2.14.0
+
+PKG_CHECK_MODULES([MAFW_LASTFM_CPA], [hildon-1 >= $HILDON_VERSION
+				     gtk+-2.0 >= $GTK_VERSION
+				     hildon-control-panel
+				     libosso])
+AC_SUBST(MAFW_LASTFM_CPA_CFLAGS)
+AC_SUBST(MAFW_LASTFM_CPA_LIBS)
+
+hildoncpdesktopentrydir=`pkg-config hildon-control-panel --variable=plugindesktopentrydir`
+AC_SUBST(hildoncpdesktopentrydir)
+
 # Checks for header files.
 AC_CHECK_HEADERS([string.h])
 
 AC_CONFIG_FILES([
 	Makefile
+	control-panel/Makefile
 	mafw-lastfm/Makefile
 ])
 
