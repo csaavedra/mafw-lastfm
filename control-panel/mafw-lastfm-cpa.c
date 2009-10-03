@@ -6,10 +6,20 @@
 
 #define MAFW_LASTFM_CREDENTIALS_FILE ".mafw-lastfm"
 
-static
-gchar *load_username (void)
+static gchar*
+load_username (const gchar *file)
 {
-	return g_strdup ("lala");
+	GKeyFile *keyfile;
+	gchar *username;
+
+	keyfile = g_key_file_new ();
+	g_key_file_load_from_file (keyfile, file, G_KEY_FILE_NONE, NULL);
+	username = g_key_file_get_string (keyfile,
+					  "Credentials", "username", NULL);
+
+	g_key_file_free (keyfile);
+
+	return username;
 }
 
 static void
@@ -27,7 +37,10 @@ execute(osso_context_t *osso, gpointer data, gboolean user_activated)
 	GtkWidget *vbox, *hbox;
 	GtkWidget *label_username;
 	GtkWidget *label_password;
-	gchar *usr;
+	gchar *usr, *settings_file;
+
+	settings_file = g_build_filename (g_get_home_dir (),
+					  MAFW_LASTFM_CREDENTIALS_FILE, NULL);
 
 	dialog = gtk_dialog_new_with_buttons ("Last.fm settings",
 					      GTK_WINDOW (data),
@@ -56,9 +69,12 @@ execute(osso_context_t *osso, gpointer data, gboolean user_activated)
 	gtk_box_pack_start (GTK_BOX (hbox), label_password, TRUE, TRUE, 20);
 	gtk_box_pack_start (GTK_BOX (hbox), password, TRUE, TRUE, 0);
 
-	usr = load_username ();
-	gtk_entry_set_text (GTK_ENTRY (username), usr);
-	g_free (usr);
+	if (g_file_test (settings_file, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
+	{
+		usr = load_username (settings_file);
+		gtk_entry_set_text (GTK_ENTRY (username), usr);
+		g_free (usr);
+	}
 
 	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
