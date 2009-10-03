@@ -37,21 +37,23 @@ execute(osso_context_t *osso, gpointer data, gboolean user_activated)
 					      NULL);
 	vbox = gtk_vbox_new (TRUE, 0);
 	label_username = gtk_label_new ("Username:");
+	gtk_misc_set_alignment (GTK_MISC (label_username), 0.0, 0.5);
 	username = hildon_entry_new (HILDON_SIZE_AUTO | HILDON_SIZE_FINGER_HEIGHT);
 
-	hbox = gtk_hbox_new (TRUE, 0);
-	gtk_box_pack_start (GTK_BOX (hbox), label_username, TRUE, TRUE, 0);
+	hbox = gtk_hbox_new (FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (hbox), label_username, TRUE, TRUE, 20);
 	gtk_box_pack_start (GTK_BOX (hbox), username, TRUE, TRUE, 0);
 
 	label_password = gtk_label_new ("Password:");
+	gtk_misc_set_alignment (GTK_MISC (label_password), 0.0, 0.5);
 	password = hildon_entry_new (HILDON_SIZE_AUTO | HILDON_SIZE_FINGER_HEIGHT);
 	hildon_gtk_entry_set_input_mode (GTK_ENTRY (password),
 					 HILDON_GTK_INPUT_MODE_FULL |
 					 HILDON_GTK_INPUT_MODE_INVISIBLE);
 	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
 
-	hbox = gtk_hbox_new (TRUE, 0);
-	gtk_box_pack_start (GTK_BOX (hbox), label_password, TRUE, TRUE, 0);
+	hbox = gtk_hbox_new (FALSE, 0);
+	gtk_box_pack_start (GTK_BOX (hbox), label_password, TRUE, TRUE, 20);
 	gtk_box_pack_start (GTK_BOX (hbox), password, TRUE, TRUE, 0);
 
 	usr = load_username ();
