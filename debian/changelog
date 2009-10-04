@@ -3,8 +3,9 @@ mafw-lastfm (0.0.1-1) unstable; urgency=low
   * Add missing dash and debian version.
   * Stop the daemon in prerm and start it in postinst.
   * Improve the description of the package.
+  * Add new dependencies for the control panel applet.
 
- -- Claudio Saavedra <csaavedra@igalia.com>  Fri, 02 Oct 2009 23:22:26 +0300
+ -- Claudio Saavedra <csaavedra@igalia.com>  Sun, 04 Oct 2009 22:54:03 +0300
 
 mafw-lastfm (0.0.1) unstable; urgency=low
 
