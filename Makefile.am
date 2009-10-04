@@ -1,2 +1,4 @@
-SUBDIRS = mafw-lastfm
+SUBDIRS = \
+	control-panel \
+	mafw-lastfm
 
