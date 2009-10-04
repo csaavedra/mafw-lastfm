@@ -6,6 +6,12 @@
 
 #define MAFW_LASTFM_CREDENTIALS_FILE ".mafw-lastfm"
 
+typedef struct {
+	GtkEntry *username;
+	GtkEntry *password;
+	gchar *settings_file;
+} SettingsContext;
+
 static gchar*
 load_username (const gchar *file)
 {
@@ -46,6 +52,41 @@ save_credentials (const gchar *file,
 	g_key_file_free (keyfile);
 }
 
+static void
+on_dialog_response (GtkDialog *dialog,
+		    gint response_id,
+		    gpointer user_data)
+{
+	SettingsContext *ctx;
+	const gchar *username;
+	const gchar *password;
+
+	ctx = (SettingsContext *) user_data;
+
+	if (response_id == GTK_RESPONSE_OK)
+	{
+		username = gtk_entry_get_text (ctx->username);
+		password = gtk_entry_get_text (ctx->password);
+
+		if (username[0] == '\0' || password[0] == '\0')
+		{
+			hildon_banner_show_information (GTK_WIDGET (dialog), NULL,
+							"Enter both your username "
+							"and password before saving.");
+			return;
+		} else
+		{
+			save_credentials (ctx->settings_file, username, password);
+		}
+	}
+
+	gtk_widget_hide (GTK_WIDGET (dialog));
+	gtk_widget_destroy (GTK_WIDGET (dialog));
+
+	g_free (ctx->settings_file);
+	g_free (ctx);
+}
+
 osso_return_t
 execute(osso_context_t *osso, gpointer data, gboolean user_activated)
 {
@@ -56,6 +97,7 @@ execute(osso_context_t *osso, gpointer data, gboolean user_activated)
 	GtkWidget *label_username;
 	GtkWidget *label_password;
 	gchar *usr, *settings_file;
+	SettingsContext *ctx;
 
 	settings_file = g_build_filename (g_get_home_dir (),
 					  MAFW_LASTFM_CREDENTIALS_FILE, NULL);
@@ -100,16 +142,17 @@ execute(osso_context_t *osso, gpointer data, gboolean user_activated)
 			   (gtk_dialog_get_content_area (GTK_DIALOG (dialog))),
 			   vbox);
 
-        gtk_widget_show_all (GTK_WIDGET(dialog));
+	ctx = g_new0 (SettingsContext, 1);
 
-	if (GTK_RESPONSE_OK == gtk_dialog_run (GTK_DIALOG(dialog)))
-	{
-		save_credentials (settings_file,
-				  gtk_entry_get_text (GTK_ENTRY (username)),
-				  gtk_entry_get_text (GTK_ENTRY (password)));
-	}
+	ctx->username = GTK_ENTRY (username);
+	ctx->password = GTK_ENTRY (password);
+	ctx->settings_file = settings_file;
 
-        gtk_widget_destroy(GTK_WIDGET(dialog));
+	g_signal_connect (dialog, "response",
+			  G_CALLBACK (on_dialog_response),
+			  ctx);
+
+	gtk_widget_show_all (dialog);
 
 	return OSSO_OK;
 }
