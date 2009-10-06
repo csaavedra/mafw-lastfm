@@ -45,6 +45,7 @@ struct _MafwLastfmScrobblerPrivate {
   gchar *sub_url;
   GQueue *scrobbling_queue;
   guint timeout;
+  guint handshake_id;
 
   guint retry_interval;
   SoupMessage *retry_message;
@@ -155,6 +156,7 @@ mafw_lastfm_scrobbler_init (MafwLastfmScrobbler *scrobbler)
   priv->np_url = NULL;
   priv->sub_url = NULL;
   priv->scrobbling_queue = g_queue_new ();
+  priv->handshake_id = 0;
 
   priv->retry_message = NULL;
   priv->retry_interval = 5;
@@ -188,6 +190,28 @@ mafw_lastfm_scrobbler_set_credentials (MafwLastfmScrobbler *scrobbler,
   scrobbler->priv->md5password = g_strdup (md5password);
 }
 
+static gboolean
+on_deferred_handshake_timeout_cb (MafwLastfmScrobbler *scrobbler)
+{
+  scrobbler->priv->handshake_id = 0;
+
+  mafw_lastfm_scrobbler_handshake (scrobbler);
+
+  return FALSE;
+}
+
+static void
+mafw_lastfm_scrobbler_defer_handshake (MafwLastfmScrobbler *scrobbler)
+{
+  if (scrobbler->priv->handshake_id != 0)
+    return;
+
+  scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
+  scrobbler->priv->handshake_id = g_timeout_add_seconds (5,
+							 on_deferred_handshake_timeout_cb,
+							 scrobbler);
+}
+
 static void
 mafw_lastfm_scrobbler_scrobbling_failed (MafwLastfmScrobbler *scrobbler)
 {
@@ -201,9 +225,8 @@ mafw_lastfm_scrobbler_scrobbling_failed (MafwLastfmScrobbler *scrobbler)
   }
   g_list_free (scrobbler->priv->scrobble_list);
   scrobbler->priv->scrobble_list = NULL;
-  scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
 
-  mafw_lastfm_scrobbler_handshake (scrobbler);
+  mafw_lastfm_scrobbler_defer_handshake (scrobbler);
 }
 
 static void
