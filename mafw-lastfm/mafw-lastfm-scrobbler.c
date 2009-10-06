@@ -297,8 +297,13 @@ set_playing_now_cb (SoupSession *session,
 		    SoupMessage *message,
 		    gpointer user_data)
 {
+  MafwLastfmScrobbler *scrobbler = MAFW_LASTFM_SCROBBLER (user_data);
+
   if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
     g_print ("Playing-now: %s", message->response_body->data);
+    if (strcmp (message->response_body->data, "BADSESSION\n") == 0) {
+      mafw_lastfm_scrobbler_defer_handshake (scrobbler);
+    }
   }
 }
 
