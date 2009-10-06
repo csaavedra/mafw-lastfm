@@ -435,6 +435,11 @@ parse_handshake_response (MafwLastfmScrobbler *scrobbler,
   response = g_strsplit (response_data, "\n", 5);
 
   if (g_str_has_prefix (response [0], "OK")) {
+
+    g_free (scrobbler->priv->session_id);
+    g_free (scrobbler->priv->np_url);
+    g_free (scrobbler->priv->sub_url);
+
     scrobbler->priv->session_id = response [1];
     scrobbler->priv->np_url = response[2];
     scrobbler->priv->sub_url = response[3];
