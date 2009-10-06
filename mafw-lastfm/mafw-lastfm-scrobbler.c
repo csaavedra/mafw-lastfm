@@ -486,7 +486,7 @@ handshake_cb (SoupSession *session,
     g_timeout_add_seconds (scrobbler->priv->retry_interval,
 			   retry_queue_message,
 			   scrobbler);
-    if (scrobbler->priv->retry_interval < 20)
+    if (scrobbler->priv->retry_interval < 320)
       scrobbler->priv->retry_interval *= 2;
   }
 }
