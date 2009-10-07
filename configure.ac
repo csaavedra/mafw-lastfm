@@ -31,6 +31,8 @@ AC_SUBST(MAFW_LASTFM_CPA_LIBS)
 hildoncpdesktopentrydir=`pkg-config hildon-control-panel --variable=plugindesktopentrydir`
 AC_SUBST(hildoncpdesktopentrydir)
 
+CFLAGS="$(CFLAGS) -Wall -Werror -Wmissing-prototypes -Wmissing-declarations -Wno-format"
+
 # Checks for header files.
 AC_CHECK_HEADERS([string.h])
 
