@@ -4,7 +4,7 @@
 #include <glib.h>
 #include <libintl.h>
 
-#define MAFW_LASTFM_CREDENTIALS_FILE ".mafw-lastfm"
+#define MAFW_LASTFM_CREDENTIALS_FILE ".osso/mafw-lastfm"
 
 typedef struct {
 	GtkEntry *username;

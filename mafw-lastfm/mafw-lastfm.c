@@ -113,7 +113,7 @@ renderer_added_cb (MafwRegistry *registry,
 	}
 }
 
-#define MAFW_LASTFM_CREDENTIALS_FILE ".mafw-lastfm"
+#define MAFW_LASTFM_CREDENTIALS_FILE ".osso/mafw-lastfm"
 
 static gboolean
 get_credentials (gchar **username,
