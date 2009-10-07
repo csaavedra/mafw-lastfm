@@ -191,8 +191,9 @@ mafw_lastfm_scrobbler_set_credentials (MafwLastfmScrobbler *scrobbler,
 }
 
 static gboolean
-on_deferred_handshake_timeout_cb (MafwLastfmScrobbler *scrobbler)
+on_deferred_handshake_timeout_cb (gpointer user_data)
 {
+  MafwLastfmScrobbler *scrobbler = user_data;
   scrobbler->priv->handshake_id = 0;
 
   mafw_lastfm_scrobbler_handshake (scrobbler);
