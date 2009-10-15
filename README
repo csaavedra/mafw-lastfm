@@ -20,7 +20,7 @@ For instance, for a user named 'jamesthehacker' with password 'james':
 
 To generate the md5sum of your password, you can simply run
 
-   $ echo password | md5sum
+   $ echo -n password | md5sum
 
 
 project page and source packages
