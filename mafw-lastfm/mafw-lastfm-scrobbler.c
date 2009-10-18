@@ -45,6 +45,7 @@ struct _MafwLastfmScrobblerPrivate {
   gchar *sub_url;
   GQueue *scrobbling_queue;
   guint timeout;
+  guint handshake_id;
 
   guint retry_interval;
   SoupMessage *retry_message;
@@ -54,11 +55,14 @@ struct _MafwLastfmScrobblerPrivate {
 
   gchar *username;
   gchar *md5password;
+
+  MafwLastfmTrack *suspended_track;
 };
 
 static MafwLastfmTrack *
 mafw_lastfm_track_encode (MafwLastfmTrack *track);
-
+static gboolean mafw_lastfm_track_cmp (MafwLastfmTrack *a,
+				       MafwLastfmTrack *b);
 
 static void handshake_cb (SoupSession *session,
 			  SoupMessage *message,
@@ -155,10 +159,12 @@ mafw_lastfm_scrobbler_init (MafwLastfmScrobbler *scrobbler)
   priv->np_url = NULL;
   priv->sub_url = NULL;
   priv->scrobbling_queue = g_queue_new ();
+  priv->handshake_id = 0;
 
   priv->retry_message = NULL;
   priv->retry_interval = 5;
   priv->scrobble_list = NULL;
+  priv->suspended_track = NULL;
 
   priv->username = NULL;
   priv->md5password = NULL;
@@ -188,6 +194,28 @@ mafw_lastfm_scrobbler_set_credentials (MafwLastfmScrobbler *scrobbler,
   scrobbler->priv->md5password = g_strdup (md5password);
 }
 
+static gboolean
+on_deferred_handshake_timeout_cb (MafwLastfmScrobbler *scrobbler)
+{
+  scrobbler->priv->handshake_id = 0;
+
+  mafw_lastfm_scrobbler_handshake (scrobbler);
+
+  return FALSE;
+}
+
+static void
+mafw_lastfm_scrobbler_defer_handshake (MafwLastfmScrobbler *scrobbler)
+{
+  if (scrobbler->priv->handshake_id != 0)
+    return;
+
+  scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
+  scrobbler->priv->handshake_id = g_timeout_add_seconds (5,
+							 (GSourceFunc) on_deferred_handshake_timeout_cb,
+							 scrobbler);
+}
+
 static void
 mafw_lastfm_scrobbler_scrobbling_failed (MafwLastfmScrobbler *scrobbler)
 {
@@ -201,9 +229,8 @@ mafw_lastfm_scrobbler_scrobbling_failed (MafwLastfmScrobbler *scrobbler)
   }
   g_list_free (scrobbler->priv->scrobble_list);
   scrobbler->priv->scrobble_list = NULL;
-  scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
 
-  mafw_lastfm_scrobbler_handshake (scrobbler);
+  mafw_lastfm_scrobbler_defer_handshake (scrobbler);
 }
 
 static void
@@ -213,6 +240,8 @@ scrobble_cb (SoupSession *session,
 {
   if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
     g_print ("Scrobble: %s", message->response_body->data);
+    if (strcmp (message->response_body->data, "BADSESSION\n") == 0)
+      mafw_lastfm_scrobbler_scrobbling_failed (MAFW_LASTFM_SCROBBLER (user_data));
   } else {
     mafw_lastfm_scrobbler_scrobbling_failed (MAFW_LASTFM_SCROBBLER (user_data));
   }
@@ -272,8 +301,13 @@ set_playing_now_cb (SoupSession *session,
 		    SoupMessage *message,
 		    gpointer user_data)
 {
+  MafwLastfmScrobbler *scrobbler = MAFW_LASTFM_SCROBBLER (user_data);
+
   if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
     g_print ("Playing-now: %s", message->response_body->data);
+    if (strcmp (message->response_body->data, "BADSESSION\n") == 0) {
+      mafw_lastfm_scrobbler_defer_handshake (scrobbler);
+    }
   }
 }
 
@@ -377,17 +411,47 @@ mafw_lastfm_scrobbler_flush_queue (MafwLastfmScrobbler *scrobbler)
 }
 
 void
+mafw_lastfm_scrobbler_suspend (MafwLastfmScrobbler *scrobbler)
+{
+  /* There is at least one track to be scrolled, suspend it for now. */
+  if (scrobbler->priv->timeout != 0) {
+    g_source_remove (scrobbler->priv->timeout);
+    scrobbler->priv->timeout = 0;
+  } else /* nothing to suspend */
+    return;
+
+  /* Remove the last track from the queue, since it is suspended. We store
+     the time when it was suspended to have an approximation of its playing time.
+  */
+  scrobbler->priv->suspended_track = g_queue_pop_tail (scrobbler->priv->scrobbling_queue);
+}
+
+void
 mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
 					MafwLastfmTrack *track)
 {
+  MafwLastfmTrack *encoded;
+
   mafw_lastfm_scrobbler_flush_queue (scrobbler);
 
   if (scrobbler->priv->status == MAFW_LASTFM_SCROBBLER_READY) {
     mafw_lastfm_scrobbler_set_playing_now (scrobbler, track);
   }
 
-  g_queue_push_tail (scrobbler->priv->scrobbling_queue,
-		     mafw_lastfm_track_encode (track));
+  encoded = mafw_lastfm_track_encode (track);
+
+  if (scrobbler->priv->suspended_track) {
+    if (mafw_lastfm_track_cmp (scrobbler->priv->suspended_track,
+			       encoded))
+    {
+      mafw_lastfm_track_free (encoded);
+      encoded = scrobbler->priv->suspended_track;
+    } else {
+      mafw_lastfm_track_free (scrobbler->priv->suspended_track);
+    }
+    scrobbler->priv->suspended_track = NULL;
+  }
+  g_queue_push_tail (scrobbler->priv->scrobbling_queue, encoded);
 
   scrobbler->priv->timeout = g_timeout_add_seconds ((gint)track->length, scrobble_timeout, scrobbler);
 }
@@ -435,6 +499,11 @@ parse_handshake_response (MafwLastfmScrobbler *scrobbler,
   response = g_strsplit (response_data, "\n", 5);
 
   if (g_str_has_prefix (response [0], "OK")) {
+
+    g_free (scrobbler->priv->session_id);
+    g_free (scrobbler->priv->np_url);
+    g_free (scrobbler->priv->sub_url);
+
     scrobbler->priv->session_id = response [1];
     scrobbler->priv->np_url = response[2];
     scrobbler->priv->sub_url = response[3];
@@ -562,6 +631,17 @@ mafw_lastfm_track_encode (MafwLastfmTrack *track)
   encoded->number = track->number;
   encoded->timestamp = track->timestamp;
   encoded->source = track->source;
+  encoded->playing_time = track->playing_time;
 
   return encoded;
+}
+
+static gboolean
+mafw_lastfm_track_cmp (MafwLastfmTrack *a,
+		       MafwLastfmTrack *b)
+{
+  return (strcmp (a->artist, b->artist) == 0 &&
+	  strcmp (a->title, b->title) == 0 &&
+	  strcmp (a->album, b->album) == 0 &&
+	  a->length == b->length);
 }
