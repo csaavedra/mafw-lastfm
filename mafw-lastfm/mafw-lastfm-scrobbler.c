@@ -208,7 +208,7 @@ mafw_lastfm_scrobbler_defer_handshake (MafwLastfmScrobbler *scrobbler)
 
   scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
   scrobbler->priv->handshake_id = g_timeout_add_seconds (5,
-							 on_deferred_handshake_timeout_cb,
+							 (GSourceFunc) on_deferred_handshake_timeout_cb,
 							 scrobbler);
 }
 
