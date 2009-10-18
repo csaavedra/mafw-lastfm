@@ -55,11 +55,14 @@ struct _MafwLastfmScrobblerPrivate {
 
   gchar *username;
   gchar *md5password;
+
+  MafwLastfmTrack *suspended_track;
 };
 
 static MafwLastfmTrack *
 mafw_lastfm_track_encode (MafwLastfmTrack *track);
-
+static gboolean mafw_lastfm_track_cmp (MafwLastfmTrack *a,
+				       MafwLastfmTrack *b);
 
 static void handshake_cb (SoupSession *session,
 			  SoupMessage *message,
@@ -161,6 +164,7 @@ mafw_lastfm_scrobbler_init (MafwLastfmScrobbler *scrobbler)
   priv->retry_message = NULL;
   priv->retry_interval = 5;
   priv->scrobble_list = NULL;
+  priv->suspended_track = NULL;
 
   priv->username = NULL;
   priv->md5password = NULL;
@@ -407,17 +411,47 @@ mafw_lastfm_scrobbler_flush_queue (MafwLastfmScrobbler *scrobbler)
 }
 
 void
+mafw_lastfm_scrobbler_suspend (MafwLastfmScrobbler *scrobbler)
+{
+  /* There is at least one track to be scrolled, suspend it for now. */
+  if (scrobbler->priv->timeout != 0) {
+    g_source_remove (scrobbler->priv->timeout);
+    scrobbler->priv->timeout = 0;
+  } else /* nothing to suspend */
+    return;
+
+  /* Remove the last track from the queue, since it is suspended. We store
+     the time when it was suspended to have an approximation of its playing time.
+  */
+  scrobbler->priv->suspended_track = g_queue_pop_tail (scrobbler->priv->scrobbling_queue);
+}
+
+void
 mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
 					MafwLastfmTrack *track)
 {
+  MafwLastfmTrack *encoded;
+
   mafw_lastfm_scrobbler_flush_queue (scrobbler);
 
   if (scrobbler->priv->status == MAFW_LASTFM_SCROBBLER_READY) {
     mafw_lastfm_scrobbler_set_playing_now (scrobbler, track);
   }
 
-  g_queue_push_tail (scrobbler->priv->scrobbling_queue,
-		     mafw_lastfm_track_encode (track));
+  encoded = mafw_lastfm_track_encode (track);
+
+  if (scrobbler->priv->suspended_track) {
+    if (mafw_lastfm_track_cmp (scrobbler->priv->suspended_track,
+			       encoded))
+    {
+      mafw_lastfm_track_free (encoded);
+      encoded = scrobbler->priv->suspended_track;
+    } else {
+      mafw_lastfm_track_free (scrobbler->priv->suspended_track);
+    }
+    scrobbler->priv->suspended_track = NULL;
+  }
+  g_queue_push_tail (scrobbler->priv->scrobbling_queue, encoded);
 
   scrobbler->priv->timeout = g_timeout_add_seconds ((gint)track->length, scrobble_timeout, scrobbler);
 }
@@ -597,6 +631,17 @@ mafw_lastfm_track_encode (MafwLastfmTrack *track)
   encoded->number = track->number;
   encoded->timestamp = track->timestamp;
   encoded->source = track->source;
+  encoded->playing_time = track->playing_time;
 
   return encoded;
+}
+
+static gboolean
+mafw_lastfm_track_cmp (MafwLastfmTrack *a,
+		       MafwLastfmTrack *b)
+{
+  return (strcmp (a->artist, b->artist) == 0 &&
+	  strcmp (a->title, b->title) == 0 &&
+	  strcmp (a->album, b->album) == 0 &&
+	  a->length == b->length);
 }
