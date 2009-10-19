@@ -1,3 +1,11 @@
+[0.0.2 Release]
+
+- New control panel applet for the configuration of the last.fm account.
+- Handhsake after BADSESSION responses, allowing the daemon to recover
+  after another client takes the session.
+- Don't scrobble a paused track.
+- Code fixes, leaks plugged, less wake-ups.
+
 [0.0.1 Release]
 
 - Initial release

@@ -133,6 +133,7 @@ execute(osso_context_t *osso, gpointer data, gboolean user_activated)
 	{
 		usr = load_username (settings_file);
 		gtk_entry_set_text (GTK_ENTRY (username), usr);
+		gtk_editable_select_region (GTK_EDITABLE (username), 0, -1);
 		g_free (usr);
 	}
 

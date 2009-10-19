@@ -631,7 +631,6 @@ mafw_lastfm_track_encode (MafwLastfmTrack *track)
   encoded->number = track->number;
   encoded->timestamp = track->timestamp;
   encoded->source = track->source;
-  encoded->playing_time = track->playing_time;
 
   return encoded;
 }
