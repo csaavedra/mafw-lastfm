@@ -114,7 +114,7 @@ renderer_added_cb (MafwRegistry *registry,
 	}
 }
 
-#define MAFW_LASTFM_CREDENTIALS_FILE ".mafw-lastfm"
+#define MAFW_LASTFM_CREDENTIALS_FILE ".osso/mafw-lastfm"
 
 static gboolean
 get_credentials (gchar **username,
@@ -190,7 +190,7 @@ int main ()
 	}
 
 	g_signal_connect (registry,
-			  "renderer_added",
+			  "renderer-added",
 			  G_CALLBACK(renderer_added_cb), scrobbler);
 	/* Also, check for already started extensions */
 	renderers = mafw_registry_get_renderers(registry);

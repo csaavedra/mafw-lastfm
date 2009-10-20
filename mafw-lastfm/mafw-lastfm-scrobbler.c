@@ -195,8 +195,9 @@ mafw_lastfm_scrobbler_set_credentials (MafwLastfmScrobbler *scrobbler,
 }
 
 static gboolean
-on_deferred_handshake_timeout_cb (MafwLastfmScrobbler *scrobbler)
+on_deferred_handshake_timeout_cb (gpointer user_data)
 {
+  MafwLastfmScrobbler *scrobbler = user_data;
   scrobbler->priv->handshake_id = 0;
 
   mafw_lastfm_scrobbler_handshake (scrobbler);
@@ -377,8 +378,8 @@ scrobble_timeout (gpointer data)
   return FALSE;
 }
 
-void
-mafw_lastfm_scrobbler_clean_queue (MafwLastfmScrobbler *scrobbler)
+static void
+clean_queue (MafwLastfmScrobbler *scrobbler)
 {
   glong timestamp = time (NULL);
   MafwLastfmTrack *track;
@@ -405,7 +406,7 @@ mafw_lastfm_scrobbler_flush_queue (MafwLastfmScrobbler *scrobbler)
 {
   if (scrobbler->priv->timeout != 0) {
     g_source_remove (scrobbler->priv->timeout);
-    mafw_lastfm_scrobbler_clean_queue (scrobbler);
+    clean_queue (scrobbler);
     scrobble_timeout ((gpointer) scrobbler);
   }
 }
