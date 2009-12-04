@@ -644,6 +644,7 @@ mafw_lastfm_track_cmp (MafwLastfmTrack *a,
 {
   return (strcmp (a->artist, b->artist) == 0 &&
 	  strcmp (a->title, b->title) == 0 &&
-	  strcmp (a->album, b->album) == 0 &&
-	  a->length == b->length);
+	  a->length == b->length &&
+          (!(a->album || b->album) ||
+           ((a->album && b->album) && strcmp (a->album, b->album) == 0)));
 }
