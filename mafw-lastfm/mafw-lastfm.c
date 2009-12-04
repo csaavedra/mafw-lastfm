@@ -30,14 +30,22 @@ static gchar *
 mafw_metadata_lookup_string (GHashTable *table,
 			     const gchar *key)
 {
-	return g_value_dup_string (mafw_metadata_first (table, key));
+        GValue *value;
+
+        value = mafw_metadata_first (table, key);
+
+        return value ?  g_value_dup_string (value) : NULL;
 }
 
 static int
 mafw_metadata_lookup_int (GHashTable *table,
 			  const gchar *key)
 {
-	return g_value_get_int (mafw_metadata_first (table, key));
+        GValue *value;
+
+        value = mafw_metadata_first (table, key);
+
+        return value ? g_value_get_int (value) : 0;
 }
 
 static void
