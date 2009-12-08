@@ -1,3 +1,9 @@
+mafw-lastfm (0.0.2-3) unstable; urgency=low
+
+  * Add missing debhelper token to postinst script.
+
+ -- Claudio Saavedra <csaavedra@igalia.com>  Tue, 08 Dec 2009 19:01:33 +0200
+
 mafw-lastfm (0.0.2-2) unstable; urgency=low
 
   * Do not fail during postinst if the daemon is not running.
