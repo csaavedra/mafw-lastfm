@@ -4,5 +4,6 @@ Version=1.0
 Name=Last.fm settings
 Comment=Configure your Last.fm account for scrobbling
 Type=HildonControlPanelPlugin
+Icon=as
 X-control-panel-plugin=libmafw-lastfm-cpa.so
 Categories=extras
