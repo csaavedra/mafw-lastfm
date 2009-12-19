@@ -195,8 +195,9 @@ mafw_lastfm_scrobbler_set_credentials (MafwLastfmScrobbler *scrobbler,
 }
 
 static gboolean
-on_deferred_handshake_timeout_cb (MafwLastfmScrobbler *scrobbler)
+on_deferred_handshake_timeout_cb (gpointer user_data)
 {
+  MafwLastfmScrobbler *scrobbler = user_data;
   scrobbler->priv->handshake_id = 0;
 
   mafw_lastfm_scrobbler_handshake (scrobbler);
@@ -377,8 +378,8 @@ scrobble_timeout (gpointer data)
   return FALSE;
 }
 
-void
-mafw_lastfm_scrobbler_clean_queue (MafwLastfmScrobbler *scrobbler)
+static void
+clean_queue (MafwLastfmScrobbler *scrobbler)
 {
   glong timestamp = time (NULL);
   MafwLastfmTrack *track;
@@ -405,7 +406,7 @@ mafw_lastfm_scrobbler_flush_queue (MafwLastfmScrobbler *scrobbler)
 {
   if (scrobbler->priv->timeout != 0) {
     g_source_remove (scrobbler->priv->timeout);
-    mafw_lastfm_scrobbler_clean_queue (scrobbler);
+    clean_queue (scrobbler);
     scrobble_timeout ((gpointer) scrobbler);
   }
 }
@@ -547,17 +548,19 @@ handshake_cb (SoupSession *session,
     if (parse_handshake_response (scrobbler, message->response_body->data)) {
       scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_READY;
       scrobbler->priv->retry_interval = 5;
+      return;
     }
-  } else {
-    g_print ("message failed, trying to send in %d seconds.\n", scrobbler->priv->retry_interval);
-    scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
-    scrobbler->priv->retry_message = g_object_ref (message);
-    g_timeout_add_seconds (scrobbler->priv->retry_interval,
-			   retry_queue_message,
-			   scrobbler);
-    if (scrobbler->priv->retry_interval < 320)
-      scrobbler->priv->retry_interval *= 2;
   }
+
+  /* If something went wrong, try to recover. */
+  g_print ("message failed, trying to send in %d seconds.\n", scrobbler->priv->retry_interval);
+  scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
+  scrobbler->priv->retry_message = g_object_ref (message);
+  g_timeout_add_seconds (scrobbler->priv->retry_interval,
+                         retry_queue_message,
+                         scrobbler);
+  if (scrobbler->priv->retry_interval < 320)
+    scrobbler->priv->retry_interval *= 2;
 }
 
 void
@@ -641,6 +644,7 @@ mafw_lastfm_track_cmp (MafwLastfmTrack *a,
 {
   return (strcmp (a->artist, b->artist) == 0 &&
 	  strcmp (a->title, b->title) == 0 &&
-	  strcmp (a->album, b->album) == 0 &&
-	  a->length == b->length);
+	  a->length == b->length &&
+          (!(a->album || b->album) ||
+           ((a->album && b->album) && strcmp (a->album, b->album) == 0)));
 }
