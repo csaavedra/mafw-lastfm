@@ -1,3 +1,10 @@
+mafw-lastfm (0.0.2-4) unstable; urgency=low
+
+  * Run postinst script with run-standalone.sh, to allow dbus to work
+    properly.
+
+ -- Claudio Saavedra <csaavedra@igalia.com>  Sat, 19 Dec 2009 18:11:02 +0200
+
 mafw-lastfm (0.0.2-3) unstable; urgency=low
 
   * Add missing debhelper token to postinst script.

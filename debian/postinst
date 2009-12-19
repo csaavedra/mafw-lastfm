@@ -1,6 +1,6 @@
 #!/bin/sh
 
-/usr/sbin/dsmetool -U user -f /usr/bin/mafw-lastfm || true
+/usr/bin/run-standalone.sh /usr/sbin/dsmetool -U user -f /usr/bin/mafw-lastfm || true
 
 #DEBHELPER#
 
