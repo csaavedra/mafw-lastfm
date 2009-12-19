@@ -1,3 +1,9 @@
+mafw-lastfm (0.0.3-1~unreleased) unstable; urgency=low
+
+  * Install audioscrobbler icon for control panel applet
+
+ -- Claudio Saavedra <csaavedra@igalia.com>  Sat, 19 Dec 2009 23:38:02 +0200
+
 mafw-lastfm (0.0.2-4) unstable; urgency=low
 
   * Run postinst script with run-standalone.sh, to allow dbus to work

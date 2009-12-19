@@ -1,5 +1,9 @@
 #!/bin/sh
 
+if which gtk-update-icon-cache >/dev/null 2>&1 ; then
+        gtk-update-icon-cache -f /usr/share/icons/hicolor > /dev/null 2>&1
+fi
+
 /usr/bin/run-standalone.sh /usr/sbin/dsmetool -U user -f /usr/bin/mafw-lastfm || true
 
 #DEBHELPER#
