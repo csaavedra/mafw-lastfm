@@ -62,11 +62,11 @@ struct _MafwLastfmScrobblerPrivate {
 static MafwLastfmTrack *
 mafw_lastfm_track_encode (MafwLastfmTrack *track);
 static gboolean mafw_lastfm_track_cmp (MafwLastfmTrack *a,
-				       MafwLastfmTrack *b);
+                                       MafwLastfmTrack *b);
 
 static void handshake_cb (SoupSession *session,
-			  SoupMessage *message,
-			  gpointer user_data);
+                          SoupMessage *message,
+                          gpointer user_data);
 
 static void
 mafw_lastfm_scrobbler_get_property (GObject *object, guint property_id,
@@ -180,8 +180,8 @@ mafw_lastfm_scrobbler_new (void)
 
 void
 mafw_lastfm_scrobbler_set_credentials (MafwLastfmScrobbler *scrobbler,
-				       const gchar *username,
-				       const gchar *md5password)
+                                       const gchar *username,
+                                       const gchar *md5password)
 {
   if (scrobbler->priv->username) {
     g_free (scrobbler->priv->username);
@@ -213,8 +213,8 @@ mafw_lastfm_scrobbler_defer_handshake (MafwLastfmScrobbler *scrobbler)
 
   scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
   scrobbler->priv->handshake_id = g_timeout_add_seconds (5,
-							 (GSourceFunc) on_deferred_handshake_timeout_cb,
-							 scrobbler);
+                                                         (GSourceFunc) on_deferred_handshake_timeout_cb,
+                                                         scrobbler);
 }
 
 static void
@@ -223,10 +223,9 @@ mafw_lastfm_scrobbler_scrobbling_failed (MafwLastfmScrobbler *scrobbler)
   GList *iter;
 
   for (iter = g_list_last (scrobbler->priv->scrobble_list);
-       iter != NULL; iter = iter->prev)
-  {
+       iter != NULL; iter = iter->prev) {
     g_queue_push_head (scrobbler->priv->scrobbling_queue,
-		       iter->data);
+                       iter->data);
   }
   g_list_free (scrobbler->priv->scrobble_list);
   scrobbler->priv->scrobble_list = NULL;
@@ -236,8 +235,8 @@ mafw_lastfm_scrobbler_scrobbling_failed (MafwLastfmScrobbler *scrobbler)
 
 static void
 scrobble_cb (SoupSession *session,
-	     SoupMessage *message,
-	     gpointer user_data)
+             SoupMessage *message,
+             gpointer user_data)
 {
   if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
     g_print ("Scrobble: %s", message->response_body->data);
@@ -257,7 +256,7 @@ scrobble_cb (SoupSession *session,
  **/
 static void
 mafw_lastfm_scrobbler_scrobble_list (MafwLastfmScrobbler *scrobbler,
-				     GList *list)
+                                     GList *list)
 {
   gint i;
   GList *iter;
@@ -271,15 +270,15 @@ mafw_lastfm_scrobbler_scrobble_list (MafwLastfmScrobbler *scrobbler,
   for (iter = list, i = 0; iter != NULL; iter = iter->next, i++) {
     track = (MafwLastfmTrack *) iter->data;
     track_data = g_strdup_printf ("&a[%i]=%s&t[%i]=%s&i[%i]=%li&o[%i]=%c&r[%i]=&l[%i]=%lld&b[%i]=%s&n[%i]=%i&m[%i]=",
-				  i, track->artist,
-				  i, track->title,
-				  i, track->timestamp,
-				  i, track->source,
-				  i, /* ratio skipped */
-				  i, track->length,
-				  i, track->album,
-				  i, track->number,
-				  i /* musicbrainz id skipped */);
+                                  i, track->artist,
+                                  i, track->title,
+                                  i, track->timestamp,
+                                  i, track->source,
+                                  i, /* ratio skipped */
+                                  i, track->length,
+                                  i, track->album,
+                                  i, track->number,
+                                  i /* musicbrainz id skipped */);
     tmp = post_data;
     post_data = g_strconcat (tmp, track_data, NULL);
     g_free (tmp);
@@ -287,20 +286,20 @@ mafw_lastfm_scrobbler_scrobble_list (MafwLastfmScrobbler *scrobbler,
 
   message = soup_message_new ("POST", scrobbler->priv->sub_url);
   soup_message_set_request (message,
-			    "application/x-www-form-urlencoded",
-			    SOUP_MEMORY_TAKE,
-			    post_data,
-			    strlen (post_data));
+                            "application/x-www-form-urlencoded",
+                            SOUP_MEMORY_TAKE,
+                            post_data,
+                            strlen (post_data));
   soup_session_queue_message (scrobbler->priv->session,
-			      message,
-			      scrobble_cb,
-			      scrobbler);
+                              message,
+                              scrobble_cb,
+                              scrobbler);
 }
 
 static void
 set_playing_now_cb (SoupSession *session,
-		    SoupMessage *message,
-		    gpointer user_data)
+                    SoupMessage *message,
+                    gpointer user_data)
 {
   MafwLastfmScrobbler *scrobbler = MAFW_LASTFM_SCROBBLER (user_data);
 
@@ -314,7 +313,7 @@ set_playing_now_cb (SoupSession *session,
 
 void
 mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
-				       MafwLastfmTrack     *track)
+                                       MafwLastfmTrack     *track)
 {
   gchar *post_data;
   SoupMessage *message;
@@ -326,25 +325,25 @@ mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
 
   encoded = mafw_lastfm_track_encode (track);
   post_data = g_strdup_printf ("s=%s&a=%s&t=%s&b=%s&l=%lli&n=%u&m=",
-			       scrobbler->priv->session_id,
-			       encoded->artist,
-			       encoded->title,
-			       encoded->album,
-			       encoded->length,
-			       encoded->number);
+                               scrobbler->priv->session_id,
+                               encoded->artist,
+                               encoded->title,
+                               encoded->album,
+                               encoded->length,
+                               encoded->number);
   g_free (encoded);
 
   message = soup_message_new ("POST",
-			      scrobbler->priv->np_url);
+                              scrobbler->priv->np_url);
   soup_message_set_request (message,
-			    "application/x-www-form-urlencoded",
-			    SOUP_MEMORY_TAKE,
-			    post_data,
-			    strlen (post_data));
+                            "application/x-www-form-urlencoded",
+                            SOUP_MEMORY_TAKE,
+                            post_data,
+                            strlen (post_data));
   soup_session_queue_message (scrobbler->priv->session,
-			      message,
-			      set_playing_now_cb,
-			      scrobbler);
+                              message,
+                              set_playing_now_cb,
+                              scrobbler);
 }
 
 static gboolean
@@ -368,8 +367,7 @@ scrobble_timeout (gpointer data)
     tracks ++;
   }
 
-  if (list)
-  {
+  if (list) {
     scrobbler->priv->scrobble_list = list;
     mafw_lastfm_scrobbler_scrobble_list (scrobbler, list);
   }
@@ -386,8 +384,7 @@ clean_queue (MafwLastfmScrobbler *scrobbler)
 
   track = (MafwLastfmTrack *) g_queue_peek_tail (scrobbler->priv->scrobbling_queue);
 
-  if (timestamp - track->timestamp < MIN (240, track->length/2))
-  {
+  if (timestamp - track->timestamp < MIN (240, track->length/2)) {
     g_queue_pop_tail (scrobbler->priv->scrobbling_queue);
     mafw_lastfm_track_free (track);
   }
@@ -429,7 +426,7 @@ mafw_lastfm_scrobbler_suspend (MafwLastfmScrobbler *scrobbler)
 
 void
 mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
-					MafwLastfmTrack *track)
+                                        MafwLastfmTrack *track)
 {
   MafwLastfmTrack *encoded;
 
@@ -443,8 +440,7 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
 
   if (scrobbler->priv->suspended_track) {
     if (mafw_lastfm_track_cmp (scrobbler->priv->suspended_track,
-			       encoded))
-    {
+                               encoded)) {
       mafw_lastfm_track_free (encoded);
       encoded = scrobbler->priv->suspended_track;
     } else {
@@ -471,29 +467,29 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
  **/
 static gchar *
 get_auth_string (const gchar *md5passwd,
-		 glong *timestamp)
+                 glong *timestamp)
 {
-	GTimeVal time_val;
-	gchar *auth;
-	gchar *md5;
+  GTimeVal time_val;
+  gchar *auth;
+  gchar *md5;
 
-	g_return_val_if_fail (timestamp != NULL, NULL);
+  g_return_val_if_fail (timestamp != NULL, NULL);
 
-	g_get_current_time (&time_val);
+  g_get_current_time (&time_val);
 
-	auth = g_strdup_printf ("%s%li", md5passwd, time_val.tv_sec);
+  auth = g_strdup_printf ("%s%li", md5passwd, time_val.tv_sec);
 
-	*timestamp = time_val.tv_sec;
+  *timestamp = time_val.tv_sec;
 
-	md5 = g_compute_checksum_for_string (G_CHECKSUM_MD5, auth, -1);
-	g_free (auth);
+  md5 = g_compute_checksum_for_string (G_CHECKSUM_MD5, auth, -1);
+  g_free (auth);
 
-	return md5;
+  return md5;
 }
 
 static gboolean
 parse_handshake_response (MafwLastfmScrobbler *scrobbler,
-			  const gchar *response_data)
+                          const gchar *response_data)
 {
   gchar **response;
 
@@ -530,16 +526,16 @@ retry_queue_message (gpointer userdata)
   MafwLastfmScrobblerPrivate *priv = MAFW_LASTFM_SCROBBLER (userdata)->priv;
   g_print ("retrying to queue message\n");
   soup_session_queue_message (priv->session,
-			      priv->retry_message,
-			      handshake_cb,
-			      MAFW_LASTFM_SCROBBLER (userdata));
+                              priv->retry_message,
+                              handshake_cb,
+                              MAFW_LASTFM_SCROBBLER (userdata));
   return FALSE;
 }
 
 static void
 handshake_cb (SoupSession *session,
-	       SoupMessage *message,
-	       gpointer user_data)
+               SoupMessage *message,
+               gpointer user_data)
 {
   MafwLastfmScrobbler *scrobbler = MAFW_LASTFM_SCROBBLER (user_data);
 
@@ -566,31 +562,31 @@ handshake_cb (SoupSession *session,
 void
 mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler)
 {
-	gchar *auth;
-	glong timestamp;
-	gchar *handshake_url;
-	SoupMessage *message;
+        gchar *auth;
+        glong timestamp;
+        gchar *handshake_url;
+        SoupMessage *message;
 
-	g_return_if_fail (scrobbler->priv->status != MAFW_LASTFM_SCROBBLER_HANDSHAKING);
-	g_return_if_fail (scrobbler->priv->username != NULL || scrobbler->priv->md5password != NULL);
+        g_return_if_fail (scrobbler->priv->status != MAFW_LASTFM_SCROBBLER_HANDSHAKING);
+        g_return_if_fail (scrobbler->priv->username != NULL || scrobbler->priv->md5password != NULL);
 
-	scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_HANDSHAKING;
+        scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_HANDSHAKING;
 
-	auth = get_auth_string (scrobbler->priv->md5password, &timestamp);
+        auth = get_auth_string (scrobbler->priv->md5password, &timestamp);
 
-	handshake_url = g_strdup_printf ("http://post.audioscrobbler.com/?hs=true&p=1.2.1&c=%s&v=%s&u=%s&t=%li&a=%s",
-					 CLIENT_ID, CLIENT_VERSION,
-					 scrobbler->priv->username,
-					 timestamp,
-					 auth);
+        handshake_url = g_strdup_printf ("http://post.audioscrobbler.com/?hs=true&p=1.2.1&c=%s&v=%s&u=%s&t=%li&a=%s",
+                                         CLIENT_ID, CLIENT_VERSION,
+                                         scrobbler->priv->username,
+                                         timestamp,
+                                         auth);
 
-	message = soup_message_new ("GET", handshake_url);
-	soup_session_queue_message (scrobbler->priv->session,
-				    message,
-				    handshake_cb,
-				    scrobbler);
-	g_free (handshake_url);
-	g_free (auth);
+        message = soup_message_new ("GET", handshake_url);
+        soup_session_queue_message (scrobbler->priv->session,
+                                    message,
+                                    handshake_cb,
+                                    scrobbler);
+        g_free (handshake_url);
+        g_free (auth);
 }
 
 MafwLastfmTrack *
@@ -640,11 +636,11 @@ mafw_lastfm_track_encode (MafwLastfmTrack *track)
 
 static gboolean
 mafw_lastfm_track_cmp (MafwLastfmTrack *a,
-		       MafwLastfmTrack *b)
+                       MafwLastfmTrack *b)
 {
   return (strcmp (a->artist, b->artist) == 0 &&
-	  strcmp (a->title, b->title) == 0 &&
-	  a->length == b->length &&
+          strcmp (a->title, b->title) == 0 &&
+          a->length == b->length &&
           (!(a->album || b->album) ||
            ((a->album && b->album) && strcmp (a->album, b->album) == 0)));
 }
