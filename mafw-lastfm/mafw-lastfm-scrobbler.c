@@ -276,7 +276,7 @@ mafw_lastfm_scrobbler_scrobble_list (MafwLastfmScrobbler *scrobbler,
                                   i, track->source,
                                   i, /* ratio skipped */
                                   i, track->length,
-                                  i, track->album,
+                                  i, track->album ? track->album : "",
                                   i, track->number,
                                   i /* musicbrainz id skipped */);
     tmp = post_data;
@@ -328,7 +328,7 @@ mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
                                scrobbler->priv->session_id,
                                encoded->artist,
                                encoded->title,
-                               encoded->album,
+			       encoded->album ? encoded->album : "",
                                encoded->length,
                                encoded->number);
   g_free (encoded);
