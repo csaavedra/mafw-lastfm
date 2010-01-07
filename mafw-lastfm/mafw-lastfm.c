@@ -26,6 +26,8 @@
 
 #define WANTED_RENDERER     "Mafw-Gst-Renderer"
 
+gint64 length;
+
 static gchar *
 mafw_metadata_lookup_string (GHashTable *table,
                              const gchar *key)
@@ -76,7 +78,7 @@ metadata_callback (MafwRenderer *self,
   track->source = 'P';
   track->album = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_ALBUM);
   track->number = mafw_metadata_lookup_int (metadata, MAFW_METADATA_KEY_TRACK);
-  track->length = g_value_get_int64 (mafw_metadata_first (metadata, MAFW_METADATA_KEY_DURATION));
+  track->length = length;
 
   mafw_lastfm_scrobbler_enqueue_scrobble (scrobbler, track);
 
@@ -105,6 +107,17 @@ state_changed_cb(MafwRenderer *renderer, MafwPlayState state,
 }
 
 static void
+metadata_changed_cb (MafwRenderer *renderer,
+		     gchar *name,
+                     GValueArray *varray,
+                     gpointer user_data)
+{
+  if (strcmp(name, "duration") == 0) {
+    length = g_value_get_int64 (g_value_array_get_nth (varray, 0));
+  }
+}
+
+static void
 renderer_added_cb (MafwRegistry *registry,
                    GObject *renderer,
                    gpointer user_data)
@@ -117,6 +130,10 @@ renderer_added_cb (MafwRegistry *registry,
       g_signal_connect (renderer,
                         "state-changed",
                         G_CALLBACK (state_changed_cb),
+                        user_data);
+      g_signal_connect (renderer,
+                        "metadata-changed",
+                        G_CALLBACK (metadata_changed_cb),
                         user_data);
     }
   }
