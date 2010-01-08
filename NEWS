@@ -1,3 +1,11 @@
+[0.0.3 Release]
+
+- Credentials file should be stored now in $HOME/.osso/mafw-lastfm instead.
+- Improved network error recovery.
+- Use audioscrobbler icon in control panel applet.
+- Work properly with broken mafw versions (track length issue).
+- Less wake-ups, several code fixes.
+
 [0.0.2 Release]
 
 - New control panel applet for the configuration of the last.fm account.
