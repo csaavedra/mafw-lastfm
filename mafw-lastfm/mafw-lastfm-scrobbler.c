@@ -44,7 +44,6 @@ struct _MafwLastfmScrobblerPrivate {
   gchar *np_url;
   gchar *sub_url;
   GQueue *scrobbling_queue;
-  guint timeout;
   guint handshake_id;
 
   guint retry_interval;
@@ -346,19 +345,15 @@ mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
                               scrobbler);
 }
 
-static gboolean
-scrobble_timeout (gpointer data)
+static void
+scrobble_real (MafwLastfmScrobbler *scrobbler)
 {
-  MafwLastfmScrobbler *scrobbler;
   MafwLastfmTrack *track;
   GList *list = NULL;
   gint tracks = 0;
 
-  scrobbler = MAFW_LASTFM_SCROBBLER (data);
-
   if (scrobbler->priv->status != MAFW_LASTFM_SCROBBLER_READY) {
-    scrobbler->priv->timeout = 0;
-    return FALSE;
+    return;
   }
 
   while (!g_queue_is_empty (scrobbler->priv->scrobbling_queue) && tracks < 50) {
@@ -371,9 +366,6 @@ scrobble_timeout (gpointer data)
     scrobbler->priv->scrobble_list = list;
     mafw_lastfm_scrobbler_scrobble_list (scrobbler, list);
   }
-
-  scrobbler->priv->timeout = 0;
-  return FALSE;
 }
 
 static void
@@ -401,26 +393,20 @@ clean_queue (MafwLastfmScrobbler *scrobbler)
 void
 mafw_lastfm_scrobbler_flush_queue (MafwLastfmScrobbler *scrobbler)
 {
-  if (scrobbler->priv->timeout != 0) {
-    g_source_remove (scrobbler->priv->timeout);
+  if (!g_queue_is_empty (scrobbler->priv->scrobbling_queue)) {
     clean_queue (scrobbler);
-    scrobble_timeout ((gpointer) scrobbler);
+    scrobble_real (scrobbler);
   }
 }
 
 void
 mafw_lastfm_scrobbler_suspend (MafwLastfmScrobbler *scrobbler)
 {
-  /* There is at least one track to be scrolled, suspend it for now. */
-  if (scrobbler->priv->timeout != 0) {
-    g_source_remove (scrobbler->priv->timeout);
-    scrobbler->priv->timeout = 0;
-  } else /* nothing to suspend */
+  /* Nothing to suspend. */
+  if (scrobbler->priv->suspended_track != NULL)
     return;
 
-  /* Remove the last track from the queue, since it is suspended. We store
-     the time when it was suspended to have an approximation of its playing time.
-  */
+  /* Remove the last track from the queue, since it is suspended. */
   scrobbler->priv->suspended_track = g_queue_pop_tail (scrobbler->priv->scrobbling_queue);
 }
 
@@ -449,8 +435,6 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
     scrobbler->priv->suspended_track = NULL;
   }
   g_queue_push_tail (scrobbler->priv->scrobbling_queue, encoded);
-
-  scrobbler->priv->timeout = g_timeout_add_seconds ((gint)track->length, scrobble_timeout, scrobbler);
 }
 
 /**
