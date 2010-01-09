@@ -1,4 +1,4 @@
-AC_INIT([mafw-lastfm], [0.0.2], [mafw-lastfm-devel@garage.maemo.org])
+AC_INIT([mafw-lastfm], [0.0.3], [mafw-lastfm-devel@garage.maemo.org])
 AM_INIT_AUTOMAKE
 
 AM_MAINTAINER_MODE
@@ -31,7 +31,7 @@ AC_SUBST(MAFW_LASTFM_CPA_LIBS)
 hildoncpdesktopentrydir=`pkg-config hildon-control-panel --variable=plugindesktopentrydir`
 AC_SUBST(hildoncpdesktopentrydir)
 
-CFLAGS="$(CFLAGS) -Wall -Werror -Wmissing-prototypes -Wmissing-declarations -Wno-format"
+CFLAGS="$CFLAGS -Wall -Werror -Wmissing-prototypes -Wmissing-declarations -Wno-format"
 
 # Checks for header files.
 AC_CHECK_HEADERS([string.h])

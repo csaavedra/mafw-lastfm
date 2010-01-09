@@ -6,7 +6,11 @@ mafw-lastfm is a small daemon that scrobbles your listening habits to last.fm.
 setting up
 ----------
 
-Create a file $HOME/.mafw-lastfm with the following contents:
+As of mafw-lastfm 0.0.2 a control panel applet for Maemo is available. In order
+to set up mafw-lastfm, simply access Settings -> Last.fm settings.
+
+Alternatively, you can create a file $HOME/.osso/mafw-lastfm with the
+following contents:
 
        [Credentials]
        username=[your lastfm username]
@@ -57,7 +61,6 @@ mafw-lastfm is in an early stage and has plenty of limitations:
 
 - Songs are not serialized, so you'll loose the tracks you've listened if you restart
   the daemon.
-- Pausing a track will still scrobble it. Resuming it will likely scrobble it again.
 
 These features will come with time.
 
