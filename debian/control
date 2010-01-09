@@ -11,6 +11,7 @@ Depends: ${misc:Depends}, ${shlibs:Depends}, hildon-libs-l10n-mr | hildon-libs-l
 Description: last.fm scrobbler for the N900
  mafw-lastfm is a last.fm scrobbler for Maemo devices using
  the Media Application Framework, like the N900.
+XB-Maemo-Display-Name: Last.fm scrobbler
 XB-Maemo-Icon-26:
  iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAABHNCSVQICAgI
  fAhkiAAAEM5JREFUaIHVmnm0X1V1xz/nnDv9hje/vLyMLwOEMCQ8ZEgCIYFE
