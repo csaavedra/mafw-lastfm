@@ -1,8 +1,12 @@
-mafw-lastfm (0.0.3-1~unreleased) unstable; urgency=low
+mafw-lastfm (0.0.3-1) unstable; urgency=low
 
-  * Install audioscrobbler icon for control panel applet
+  * New upstream release.
+  * Install audioscrobbler icon for control panel applet.
+  * Set Maemo-Icon-26 and Maemo-Display-Name.
+  * Move credentials file from /home/user to /home/user/.osso during
+    postint.
 
- -- Claudio Saavedra <csaavedra@igalia.com>  Sat, 19 Dec 2009 23:38:02 +0200
+ -- Claudio Saavedra <csaavedra@igalia.com>  Sat, 09 Jan 2010 22:01:43 +0200
 
 mafw-lastfm (0.0.2-4) unstable; urgency=low
 
