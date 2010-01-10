@@ -183,6 +183,19 @@ get_credentials (gchar *file,
   return TRUE;
 }
 
+static void
+authenticate_from_file (MafwLastfmScrobbler *scrobbler,
+                        gchar *path)
+{
+  gchar *username, *md5passwd;
+
+  if (get_credentials (path, &username, &md5passwd)) {
+    mafw_lastfm_scrobbler_set_credentials (scrobbler, username, md5passwd);
+    mafw_lastfm_scrobbler_handshake (scrobbler);
+    g_free (username);
+    g_free (md5passwd);
+  }
+}
 int main ()
 {
   GError *error = NULL;
@@ -190,7 +203,6 @@ int main ()
   GMainLoop *main_loop;
   GList *renderers;
   MafwLastfmScrobbler *scrobbler;
-  gchar *username, *md5passwd;
   gchar *file;
 
   g_type_init ();
@@ -224,10 +236,7 @@ int main ()
 
   file = g_build_filename (g_get_home_dir (),
                            MAFW_LASTFM_CREDENTIALS_FILE, NULL);
-  if (get_credentials (file, &username, &md5passwd)) {
-    mafw_lastfm_scrobbler_set_credentials (scrobbler, username, md5passwd);
-    mafw_lastfm_scrobbler_handshake (scrobbler);
-  }
+  authenticate_from_file (scrobbler, file);
   g_free (file);
 
   main_loop = g_main_loop_new (NULL, FALSE);
