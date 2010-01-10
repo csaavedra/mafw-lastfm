@@ -515,6 +515,8 @@ retry_queue_message (gpointer userdata)
                               priv->retry_message,
                               handshake_cb,
                               MAFW_LASTFM_SCROBBLER (userdata));
+  priv->retry_message = NULL;
+
   return FALSE;
 }
 
@@ -538,9 +540,9 @@ handshake_cb (SoupSession *session,
   g_print ("message failed, trying to send in %d seconds.\n", scrobbler->priv->retry_interval);
   scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
   scrobbler->priv->retry_message = g_object_ref (message);
-  g_timeout_add_seconds (scrobbler->priv->retry_interval,
-                         retry_queue_message,
-                         scrobbler);
+  scrobbler->priv->handshake_id = g_timeout_add_seconds (scrobbler->priv->retry_interval,
+                                                         retry_queue_message,
+                                                         scrobbler);
   if (scrobbler->priv->retry_interval < 320)
     scrobbler->priv->retry_interval *= 2;
 }
@@ -555,6 +557,14 @@ mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler)
 
         g_return_if_fail (scrobbler->priv->status != MAFW_LASTFM_SCROBBLER_HANDSHAKING);
         g_return_if_fail (scrobbler->priv->username != NULL || scrobbler->priv->md5password != NULL);
+        if (scrobbler->priv->handshake_id) {
+          g_source_remove (scrobbler->priv->handshake_id);
+          scrobbler->priv->handshake_id = 0;
+          if (scrobbler->priv->retry_message) {
+            g_object_unref (scrobbler->priv->retry_message);
+            scrobbler->priv->retry_message = NULL;
+          }
+        }
 
         scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_HANDSHAKING;
 
