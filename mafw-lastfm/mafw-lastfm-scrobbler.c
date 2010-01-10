@@ -45,6 +45,8 @@ struct _MafwLastfmScrobblerPrivate {
   gchar *sub_url;
   GQueue *scrobbling_queue;
   guint handshake_id;
+  guint playing_now_id;
+  MafwLastfmTrack *playing_now_track;
 
   guint retry_interval;
   SoupMessage *retry_message;
@@ -120,6 +122,16 @@ mafw_lastfm_scrobbler_dispose (GObject *object)
     priv->scrobbling_queue = NULL;
   }
 
+  if (priv->playing_now_id) {
+    g_source_remove (priv->playing_now_id);
+    priv->playing_now_id = 0;
+  }
+
+  if (priv->playing_now_track) {
+    mafw_lastfm_track_free (priv->playing_now_track);
+    priv->playing_now_track = NULL;
+  }
+
   if (priv->username) {
     g_free (priv->username);
   }
@@ -166,6 +178,9 @@ mafw_lastfm_scrobbler_init (MafwLastfmScrobbler *scrobbler)
   priv->retry_interval = 5;
   priv->scrobble_list = NULL;
   priv->suspended_track = NULL;
+
+  priv->playing_now_track = NULL;
+  priv->playing_now_id = 0;
 
   priv->username = NULL;
   priv->md5password = NULL;
@@ -411,6 +426,18 @@ mafw_lastfm_scrobbler_suspend (MafwLastfmScrobbler *scrobbler)
   scrobbler->priv->suspended_track = g_queue_pop_tail (scrobbler->priv->scrobbling_queue);
 }
 
+static gboolean
+defer_set_playing_now_cb (MafwLastfmScrobbler *scrobbler)
+{
+  mafw_lastfm_scrobbler_set_playing_now (scrobbler,
+                                         scrobbler->priv->playing_now_track);
+  mafw_lastfm_track_free (scrobbler->priv->playing_now_track);
+  scrobbler->priv->playing_now_track = NULL;
+  scrobbler->priv->playing_now_id = 0;
+
+  return FALSE;
+}
+
 void
 mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
                                         MafwLastfmTrack *track)
@@ -422,7 +449,15 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
   encoded = mafw_lastfm_track_encode (track);
 
   if (scrobbler->priv->status == MAFW_LASTFM_SCROBBLER_READY) {
-    mafw_lastfm_scrobbler_set_playing_now (scrobbler, encoded);
+    if (scrobbler->priv->playing_now_id)
+      g_source_remove (scrobbler->priv->playing_now_id);
+    if (scrobbler->priv->playing_now_track)
+      mafw_lastfm_track_free (scrobbler->priv->playing_now_track);
+
+    scrobbler->priv->playing_now_track = mafw_lastfm_track_dup (encoded);
+    scrobbler->priv->playing_now_id = g_timeout_add_seconds (3,
+                                                             (GSourceFunc) defer_set_playing_now_cb,
+                                                             scrobbler);
   }
 
   if (scrobbler->priv->suspended_track) {
