@@ -20,6 +20,7 @@
 #include <glib.h>
 #include <libmafw/mafw.h>
 #include <libmafw-shared/mafw-shared.h>
+#include <gio/gio.h>
 #include <string.h>
 
 #include "mafw-lastfm-scrobbler.h"
@@ -196,6 +197,36 @@ authenticate_from_file (MafwLastfmScrobbler *scrobbler,
     g_free (md5passwd);
   }
 }
+
+static void
+on_credentials_file_changed (GFileMonitor *monitor,
+                             GFile *file,
+                             GFile *other_file,
+                             GFileMonitorEvent event_type,
+                             MafwLastfmScrobbler *scrobbler)
+{
+  gchar *path;
+
+  path = g_file_get_path (file);
+  authenticate_from_file (scrobbler, path);
+  g_free (path);
+}
+
+static void
+monitor_credentials_file (const gchar *path, MafwLastfmScrobbler *scrobbler)
+{
+  GFile * file;
+  GFileMonitor *monitor;
+
+  file = g_file_new_for_path (path);
+  monitor = g_file_monitor_file (file, G_FILE_MONITOR_NONE,
+                                 NULL, NULL);
+  g_signal_connect (monitor, "changed",
+                    G_CALLBACK (on_credentials_file_changed),
+                    scrobbler);
+  g_object_unref (file);
+}
+
 int main ()
 {
   GError *error = NULL;
@@ -236,6 +267,7 @@ int main ()
 
   file = g_build_filename (g_get_home_dir (),
                            MAFW_LASTFM_CREDENTIALS_FILE, NULL);
+  monitor_credentials_file (file, scrobbler);
   authenticate_from_file (scrobbler, file);
   g_free (file);
 
