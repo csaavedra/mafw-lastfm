@@ -134,10 +134,12 @@ mafw_lastfm_scrobbler_dispose (GObject *object)
 
   if (priv->username) {
     g_free (priv->username);
+    priv->username = NULL;
   }
 
   if (priv->md5password) {
     g_free (priv->md5password);
+    priv->md5password = NULL;
   }
 
   G_OBJECT_CLASS (mafw_lastfm_scrobbler_parent_class)->dispose (object);
