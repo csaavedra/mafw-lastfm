@@ -109,7 +109,7 @@ state_changed_cb(MafwRenderer *renderer, MafwPlayState state,
 
 static void
 metadata_changed_cb (MafwRenderer *renderer,
-		     gchar *name,
+                     gchar *name,
                      GValueArray *varray,
                      gpointer user_data)
 {

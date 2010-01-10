@@ -327,7 +327,7 @@ mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
                                scrobbler->priv->session_id,
                                encoded->artist,
                                encoded->title,
-			       encoded->album ? encoded->album : "",
+                               encoded->album ? encoded->album : "",
                                encoded->length,
                                encoded->number);
   g_free (encoded);
@@ -518,8 +518,8 @@ retry_queue_message (gpointer userdata)
 
 static void
 handshake_cb (SoupSession *session,
-               SoupMessage *message,
-               gpointer user_data)
+              SoupMessage *message,
+              gpointer user_data)
 {
   MafwLastfmScrobbler *scrobbler = MAFW_LASTFM_SCROBBLER (user_data);
 
