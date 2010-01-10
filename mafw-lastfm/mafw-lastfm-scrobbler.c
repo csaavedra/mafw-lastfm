@@ -314,17 +314,15 @@ set_playing_now_cb (SoupSession *session,
 
 void
 mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
-                                       MafwLastfmTrack     *track)
+                                       MafwLastfmTrack     *encoded)
 {
   gchar *post_data;
   SoupMessage *message;
-  MafwLastfmTrack *encoded;
 
   g_return_if_fail (MAFW_LASTFM_IS_SCROBBLER (scrobbler));
-  g_return_if_fail (track != NULL);
+  g_return_if_fail (encoded != NULL);
   g_return_if_fail (scrobbler->priv->status == MAFW_LASTFM_SCROBBLER_READY);
 
-  encoded = mafw_lastfm_track_encode (track);
   post_data = g_strdup_printf ("s=%s&a=%s&t=%s&b=%s&l=%lli&n=%u&m=",
                                scrobbler->priv->session_id,
                                encoded->artist,
@@ -332,7 +330,6 @@ mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
                                encoded->album ? encoded->album : "",
                                encoded->length,
                                encoded->number);
-  g_free (encoded);
 
   message = soup_message_new ("POST",
                               scrobbler->priv->np_url);
@@ -420,11 +417,11 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
 
   mafw_lastfm_scrobbler_flush_queue (scrobbler);
 
-  if (scrobbler->priv->status == MAFW_LASTFM_SCROBBLER_READY) {
-    mafw_lastfm_scrobbler_set_playing_now (scrobbler, track);
-  }
-
   encoded = mafw_lastfm_track_encode (track);
+
+  if (scrobbler->priv->status == MAFW_LASTFM_SCROBBLER_READY) {
+    mafw_lastfm_scrobbler_set_playing_now (scrobbler, encoded);
+  }
 
   if (scrobbler->priv->suspended_track) {
     if (mafw_lastfm_track_cmp (scrobbler->priv->suspended_track,
