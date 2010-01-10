@@ -191,6 +191,8 @@ mafw_lastfm_scrobbler_set_credentials (MafwLastfmScrobbler *scrobbler,
     g_free (scrobbler->priv->md5password);
   }
   scrobbler->priv->md5password = g_strdup (md5password);
+
+  scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
 }
 
 static gboolean
