@@ -142,11 +142,10 @@ renderer_added_cb (MafwRegistry *registry,
 #define MAFW_LASTFM_CREDENTIALS_FILE ".osso/mafw-lastfm"
 
 static gboolean
-get_credentials (gchar **username,
+get_credentials (gchar *file,
+                 gchar **username,
                  gchar **pw_md5)
 {
-  gchar *file = g_build_filename (g_get_home_dir (),
-                                  MAFW_LASTFM_CREDENTIALS_FILE, NULL);
   GKeyFile *keyfile;
   GError *error = NULL;
 
@@ -192,6 +191,7 @@ int main ()
   GList *renderers;
   MafwLastfmScrobbler *scrobbler;
   gchar *username, *md5passwd;
+  gchar *file;
 
   g_type_init ();
   if (!g_thread_supported ())
@@ -222,10 +222,13 @@ int main ()
     renderers = g_list_next(renderers);
   }
 
-  if (get_credentials (&username, &md5passwd)) {
+  file = g_build_filename (g_get_home_dir (),
+                           MAFW_LASTFM_CREDENTIALS_FILE, NULL);
+  if (get_credentials (file, &username, &md5passwd)) {
     mafw_lastfm_scrobbler_set_credentials (scrobbler, username, md5passwd);
     mafw_lastfm_scrobbler_handshake (scrobbler);
   }
+  g_free (file);
 
   main_loop = g_main_loop_new (NULL, FALSE);
   g_main_loop_run (main_loop);
