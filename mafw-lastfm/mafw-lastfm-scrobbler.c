@@ -62,6 +62,8 @@ static MafwLastfmTrack *
 mafw_lastfm_track_encode (MafwLastfmTrack *track);
 static gboolean mafw_lastfm_track_cmp (MafwLastfmTrack *a,
                                        MafwLastfmTrack *b);
+static  MafwLastfmTrack *
+mafw_lastfm_track_dup (MafwLastfmTrack *track);
 
 static void handshake_cb (SoupSession *session,
                           SoupMessage *message,
@@ -636,4 +638,20 @@ mafw_lastfm_track_cmp (MafwLastfmTrack *a,
           a->length == b->length &&
           (!(a->album || b->album) ||
            ((a->album && b->album) && strcmp (a->album, b->album) == 0)));
+}
+
+static MafwLastfmTrack *
+mafw_lastfm_track_dup (MafwLastfmTrack *track)
+{
+  MafwLastfmTrack *track2 = mafw_lastfm_track_new ();
+
+  track2->artist = g_strdup (track->artist);
+  track2->title = g_strdup (track->title);
+  track2->album = g_strdup (track->album);
+  track2->timestamp = track->timestamp;
+  track2->source = track->source;
+  track2->length = track->length;
+  track2->number = track->number;
+
+  return track2;
 }
