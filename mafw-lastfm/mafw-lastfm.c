@@ -68,7 +68,7 @@ metadata_callback (MafwRenderer *self,
   track->artist = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_ARTIST);
   track->title = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_TITLE);
 
-  if (track->artist == NULL || track->title == NULL)
+  if (!track->artist || !track->title)
     return;
 
   track->timestamp = time_val.tv_sec; /* This should probably be obtained in the
@@ -166,7 +166,7 @@ get_credentials (gchar *file,
   *pw_md5 = g_key_file_get_string (keyfile,
                                    "Credentials", "password", NULL);
 
-  if (*username == NULL || *pw_md5 == NULL) {
+  if (!*username || !*pw_md5) {
     g_warning ("Error loading username or password md5");
 
     g_free (*username);
@@ -241,13 +241,13 @@ int main ()
   scrobbler = mafw_lastfm_scrobbler_new ();
 
   registry = MAFW_REGISTRY (mafw_registry_get_instance ());
-  if (registry == NULL) {
+  if (!registry) {
     g_warning ("Failed to get register.\n");
     return 1;
   }
 
   mafw_shared_init (registry, &error);
-  if (error != NULL) {
+  if (error) {
     g_warning ("Failed to initialize the shared library.\n");
     return 1;
   }

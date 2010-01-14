@@ -39,7 +39,7 @@ typedef enum {
   MAFW_LASTFM_SCROBBLER_SUBMITTING
 } MafwLastfmScrobblerStatus;
 
-struct _MafwLastfmScrobblerPrivate {
+struct MafwLastfmScrobblerPrivate {
   SoupSession *session;
   gchar *session_id;
   gchar *np_url;
@@ -97,25 +97,18 @@ mafw_lastfm_scrobbler_dispose (GObject *object)
 {
   MafwLastfmScrobblerPrivate *priv = MAFW_LASTFM_SCROBBLER (object)->priv;
 
-  if (priv->session != NULL) {
+  if (priv->session) {
     soup_session_abort (priv->session);
     g_object_unref (priv->session);
     priv->session = NULL;
   }
 
-  if (priv->session_id != NULL) {
-    g_free (priv->session_id);
-    priv->session_id = NULL;
-  }
-  if (priv->np_url == NULL) {
-    g_free (priv->np_url);
-    priv->np_url = NULL;
-  }
-
-  if (priv->sub_url == NULL) {
-    g_free (priv->sub_url);
-    priv->sub_url = NULL;
-  }
+  g_free (priv->session_id);
+  priv->session_id = NULL;
+  g_free (priv->np_url);
+  priv->np_url = NULL;
+  g_free (priv->sub_url);
+  priv->sub_url = NULL;
 
   if (priv->scrobbling_queue) {
     g_queue_foreach (priv->scrobbling_queue, (GFunc) mafw_lastfm_track_free, NULL);
@@ -133,15 +126,10 @@ mafw_lastfm_scrobbler_dispose (GObject *object)
     priv->playing_now_track = NULL;
   }
 
-  if (priv->username) {
-    g_free (priv->username);
-    priv->username = NULL;
-  }
-
-  if (priv->md5password) {
-    g_free (priv->md5password);
-    priv->md5password = NULL;
-  }
+  g_free (priv->username);
+  priv->username = NULL;
+  g_free (priv->md5password);
+  priv->md5password = NULL;
 
   G_OBJECT_CLASS (mafw_lastfm_scrobbler_parent_class)->dispose (object);
 }
@@ -202,14 +190,10 @@ mafw_lastfm_scrobbler_set_credentials (MafwLastfmScrobbler *scrobbler,
                                        const gchar *username,
                                        const gchar *md5password)
 {
-  if (scrobbler->priv->username) {
-    g_free (scrobbler->priv->username);
-  }
+  g_free (scrobbler->priv->username);
   scrobbler->priv->username = g_strdup (username);
 
-  if (scrobbler->priv->md5password) {
-    g_free (scrobbler->priv->md5password);
-  }
+  g_free (scrobbler->priv->md5password);
   scrobbler->priv->md5password = g_strdup (md5password);
 
   scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
@@ -244,7 +228,7 @@ mafw_lastfm_scrobbler_scrobbling_failed (MafwLastfmScrobbler *scrobbler)
   GList *iter;
 
   for (iter = g_list_last (scrobbler->priv->scrobble_list);
-       iter != NULL; iter = iter->prev) {
+       iter; iter = iter->prev) {
     g_queue_push_head (scrobbler->priv->scrobbling_queue,
                        iter->data);
   }
@@ -288,7 +272,7 @@ mafw_lastfm_scrobbler_scrobble_list (MafwLastfmScrobbler *scrobbler,
 
   post_data = g_strdup_printf ("s=%s", scrobbler->priv->session_id);
 
-  for (iter = list, i = 0; iter != NULL; iter = iter->next, i++) {
+  for (iter = list, i = 0; iter; iter = iter->next, i++) {
     track = (MafwLastfmTrack *) iter->data;
     track_data = g_strdup_printf ("&a[%i]=%s&t[%i]=%s&i[%i]=%li&o[%i]=%c&r[%i]=&l[%i]=%lld&b[%i]=%s&n[%i]=%i&m[%i]=",
                                   i, track->artist,
@@ -339,7 +323,7 @@ mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
   SoupMessage *message;
 
   g_return_if_fail (MAFW_LASTFM_IS_SCROBBLER (scrobbler));
-  g_return_if_fail (encoded != NULL);
+  g_return_if_fail (encoded);
   g_return_if_fail (scrobbler->priv->status == MAFW_LASTFM_SCROBBLER_READY);
 
   post_data = g_strdup_printf ("s=%s&a=%s&t=%s&b=%s&l=%lli&n=%u&m=",
@@ -420,7 +404,7 @@ void
 mafw_lastfm_scrobbler_suspend (MafwLastfmScrobbler *scrobbler)
 {
   /* Nothing to suspend. */
-  if (scrobbler->priv->suspended_track != NULL)
+  if (scrobbler->priv->suspended_track)
     return;
 
   /* Remove the last track from the queue, since it is suspended. */
@@ -494,7 +478,7 @@ get_auth_string (const gchar *md5passwd,
   gchar *auth;
   gchar *md5;
 
-  g_return_val_if_fail (timestamp != NULL, NULL);
+  g_return_val_if_fail (timestamp, NULL);
 
   g_get_current_time (&time_val);
 
@@ -590,7 +574,7 @@ mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler)
   SoupMessage *message;
 
   g_return_if_fail (scrobbler->priv->status != MAFW_LASTFM_SCROBBLER_HANDSHAKING);
-  g_return_if_fail (scrobbler->priv->username != NULL || scrobbler->priv->md5password != NULL);
+  g_return_if_fail (scrobbler->priv->username || scrobbler->priv->md5password);
   if (scrobbler->priv->handshake_id) {
     g_source_remove (scrobbler->priv->handshake_id);
     scrobbler->priv->handshake_id = 0;
@@ -628,7 +612,7 @@ mafw_lastfm_track_new (void)
 void
 mafw_lastfm_track_free (MafwLastfmTrack *track)
 {
-  if (track == NULL)
+  if (!track)
     return;
 
   g_free (track->artist);
@@ -647,13 +631,13 @@ mafw_lastfm_track_encode (MafwLastfmTrack *track)
 
   encoded = mafw_lastfm_track_new ();
 
-  if (track->artist != NULL)
+  if (track->artist)
     encoded->artist = soup_uri_encode (track->artist, EXTRA_URI_ENCODE_CHARS);
 
-  if (track->title != NULL)
+  if (track->title)
     encoded->title = soup_uri_encode (track->title, EXTRA_URI_ENCODE_CHARS);
 
-  if (track->album != NULL)
+  if (track->album)
     encoded->album = soup_uri_encode (track->album, EXTRA_URI_ENCODE_CHARS);
 
   encoded->length = track->length;

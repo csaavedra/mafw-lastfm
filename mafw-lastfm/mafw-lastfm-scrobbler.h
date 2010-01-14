@@ -18,8 +18,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
-#ifndef _MAFW_LASTFM_SCROBBLER
-#define _MAFW_LASTFM_SCROBBLER
+#ifndef MAFW_LASTFM_SCROBBLER_H
+#define MAFW_LASTFM_SCROBBLER_H
 
 #include <glib-object.h>
 
@@ -42,7 +42,7 @@ G_BEGIN_DECLS
 #define MAFW_LASTFM_SCROBBLER_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), MAFW_LASTFM_TYPE_SCROBBLER, MafwLastfmScrobblerClass))
 
-typedef struct _MafwLastfmScrobblerPrivate MafwLastfmScrobblerPrivate;
+typedef struct MafwLastfmScrobblerPrivate MafwLastfmScrobblerPrivate;
 
 typedef struct {
   GObject parent;
@@ -99,4 +99,4 @@ mafw_lastfm_track_free (MafwLastfmTrack *track);
 
 G_END_DECLS
 
-#endif /* _MAFW_LASTFM_SCROBBLER */
+#endif /* MAFW_LASTFM_SCROBBLER_H */
