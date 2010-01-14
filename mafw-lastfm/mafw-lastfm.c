@@ -225,7 +225,7 @@ monitor_credentials_file (const gchar *path,
   g_object_unref (file);
 }
 
-int main ()
+int main (void)
 {
   GError *error = NULL;
   MafwRegistry *registry;
