@@ -234,7 +234,6 @@ int main (void)
   GError *error = NULL;
   MafwRegistry *registry;
   GMainLoop *main_loop;
-  GList *renderers;
   MafwLastfmScrobbler *scrobbler;
   gchar *file;
 
@@ -259,13 +258,6 @@ int main (void)
   g_signal_connect (registry,
                     "renderer-added",
                     G_CALLBACK (renderer_added_cb), scrobbler);
-  /* Also, check for already started extensions */
-  renderers = mafw_registry_get_renderers (registry);
-  while (renderers) {
-    renderer_added_cb (registry,
-                       G_OBJECT (renderers->data), scrobbler);
-    renderers = g_list_next (renderers);
-  }
 
   file = g_build_filename (g_get_home_dir (),
                            MAFW_LASTFM_CREDENTIALS_FILE, NULL);
