@@ -73,26 +73,6 @@ static void handshake_cb (SoupSession *session,
                           gpointer user_data);
 
 static void
-mafw_lastfm_scrobbler_get_property (GObject *object, guint property_id,
-                                    GValue *value, GParamSpec *pspec)
-{
-  switch (property_id) {
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-  }
-}
-
-static void
-mafw_lastfm_scrobbler_set_property (GObject *object, guint property_id,
-                                    const GValue *value, GParamSpec *pspec)
-{
-  switch (property_id) {
-  default:
-    G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
-  }
-}
-
-static void
 mafw_lastfm_scrobbler_dispose (GObject *object)
 {
   MafwLastfmScrobblerPrivate *priv = MAFW_LASTFM_SCROBBLER (object)->priv;
@@ -146,8 +126,6 @@ mafw_lastfm_scrobbler_class_init (MafwLastfmScrobblerClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   g_type_class_add_private (klass, sizeof (MafwLastfmScrobblerPrivate));
 
-  object_class->get_property = mafw_lastfm_scrobbler_get_property;
-  object_class->set_property = mafw_lastfm_scrobbler_set_property;
   object_class->dispose = mafw_lastfm_scrobbler_dispose;
   object_class->finalize = mafw_lastfm_scrobbler_finalize;
 }
