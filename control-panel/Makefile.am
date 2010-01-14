@@ -1,5 +1,5 @@
 AM_LDFLAGS = -shared
-INCLUDES = $(MAFW_LASTFM_CPA_CFLAGS)
+AM_CPPFLAGS = $(MAFW_LASTFM_CPA_CFLAGS)
 
 libmafw_lastfm_cpa_PROGRAMS = libmafw-lastfm-cpa.so
 libmafw_lastfm_cpa_so_LDADD = $(MAFW_LASTFM_CPA_LIBS)

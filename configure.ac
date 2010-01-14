@@ -7,6 +7,7 @@ AC_CONFIG_SRCDIR([mafw-lastfm/mafw-lastfm.c])
 AC_CONFIG_HEADERS([config.h])
 
 AC_PROG_CC
+AM_PROG_CC_C_O
 
 GLIB_VERSION=2.16.0
 LIBSOUP_VERSION=2.24.0
