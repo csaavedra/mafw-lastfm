@@ -120,21 +120,24 @@ renderer_added_cb (MafwRegistry *registry,
                    GObject *renderer,
                    gpointer user_data)
 {
-  if (MAFW_IS_RENDERER (renderer)) {
-    const gchar *name =
-      mafw_extension_get_name (MAFW_EXTENSION (renderer));
+  const gchar *name;
 
-    if (strcmp (name, WANTED_RENDERER) == 0) {
-      g_signal_connect (renderer,
-                        "state-changed",
-                        G_CALLBACK (state_changed_cb),
-                        user_data);
-      g_signal_connect (renderer,
-                        "metadata-changed",
-                        G_CALLBACK (metadata_changed_cb),
-                        user_data);
-    }
-  }
+  if (!MAFW_IS_RENDERER (renderer))
+    return;
+
+  name = mafw_extension_get_name (MAFW_EXTENSION (renderer));
+
+  if (strcmp (name, WANTED_RENDERER) != 0)
+    return;
+
+  g_signal_connect (renderer,
+                    "state-changed",
+                    G_CALLBACK (state_changed_cb),
+                    user_data);
+  g_signal_connect (renderer,
+                    "metadata-changed",
+                    G_CALLBACK (metadata_changed_cb),
+                    user_data);
 }
 
 #define MAFW_LASTFM_CREDENTIALS_FILE ".osso/mafw-lastfm"
@@ -187,12 +190,13 @@ authenticate_from_file (MafwLastfmScrobbler *scrobbler,
 {
   gchar *username, *md5passwd;
 
-  if (get_credentials (path, &username, &md5passwd)) {
-    mafw_lastfm_scrobbler_set_credentials (scrobbler, username, md5passwd);
-    mafw_lastfm_scrobbler_handshake (scrobbler);
-    g_free (username);
-    g_free (md5passwd);
-  }
+  if (!get_credentials (path, &username, &md5passwd))
+    return;
+
+  mafw_lastfm_scrobbler_set_credentials (scrobbler, username, md5passwd);
+  mafw_lastfm_scrobbler_handshake (scrobbler);
+  g_free (username);
+  g_free (md5passwd);
 }
 
 static void
