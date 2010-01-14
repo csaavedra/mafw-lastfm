@@ -27,7 +27,7 @@
 #define CLIENT_ID "maf"
 #define CLIENT_VERSION "0.0.1"
 
-G_DEFINE_TYPE (MafwLastfmScrobbler, mafw_lastfm_scrobbler, G_TYPE_OBJECT)
+G_DEFINE_TYPE (MafwLastfmScrobbler, mafw_lastfm_scrobbler, G_TYPE_OBJECT);
 
 #define GET_PRIVATE(o) \
   (G_TYPE_INSTANCE_GET_PRIVATE ((o), MAFW_LASTFM_TYPE_SCROBBLER, MafwLastfmScrobblerPrivate))
@@ -74,7 +74,7 @@ static void handshake_cb (SoupSession *session,
 
 static void
 mafw_lastfm_scrobbler_get_property (GObject *object, guint property_id,
-                              GValue *value, GParamSpec *pspec)
+                                    GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
   default:
@@ -84,7 +84,7 @@ mafw_lastfm_scrobbler_get_property (GObject *object, guint property_id,
 
 static void
 mafw_lastfm_scrobbler_set_property (GObject *object, guint property_id,
-                              const GValue *value, GParamSpec *pspec)
+                                    const GValue *value, GParamSpec *pspec)
 {
   switch (property_id) {
   default:
@@ -587,39 +587,39 @@ handshake_cb (SoupSession *session,
 void
 mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler)
 {
-        gchar *auth;
-        glong timestamp;
-        gchar *handshake_url;
-        SoupMessage *message;
+  gchar *auth;
+  glong timestamp;
+  gchar *handshake_url;
+  SoupMessage *message;
 
-        g_return_if_fail (scrobbler->priv->status != MAFW_LASTFM_SCROBBLER_HANDSHAKING);
-        g_return_if_fail (scrobbler->priv->username != NULL || scrobbler->priv->md5password != NULL);
-        if (scrobbler->priv->handshake_id) {
-          g_source_remove (scrobbler->priv->handshake_id);
-          scrobbler->priv->handshake_id = 0;
-          if (scrobbler->priv->retry_message) {
-            g_object_unref (scrobbler->priv->retry_message);
-            scrobbler->priv->retry_message = NULL;
-          }
-        }
+  g_return_if_fail (scrobbler->priv->status != MAFW_LASTFM_SCROBBLER_HANDSHAKING);
+  g_return_if_fail (scrobbler->priv->username != NULL || scrobbler->priv->md5password != NULL);
+  if (scrobbler->priv->handshake_id) {
+    g_source_remove (scrobbler->priv->handshake_id);
+    scrobbler->priv->handshake_id = 0;
+    if (scrobbler->priv->retry_message) {
+      g_object_unref (scrobbler->priv->retry_message);
+      scrobbler->priv->retry_message = NULL;
+    }
+  }
 
-        scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_HANDSHAKING;
+  scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_HANDSHAKING;
 
-        auth = get_auth_string (scrobbler->priv->md5password, &timestamp);
+  auth = get_auth_string (scrobbler->priv->md5password, &timestamp);
 
-        handshake_url = g_strdup_printf ("http://post.audioscrobbler.com/?hs=true&p=1.2.1&c=%s&v=%s&u=%s&t=%li&a=%s",
-                                         CLIENT_ID, CLIENT_VERSION,
-                                         scrobbler->priv->username,
-                                         timestamp,
-                                         auth);
+  handshake_url = g_strdup_printf ("http://post.audioscrobbler.com/?hs=true&p=1.2.1&c=%s&v=%s&u=%s&t=%li&a=%s",
+                                   CLIENT_ID, CLIENT_VERSION,
+                                   scrobbler->priv->username,
+                                   timestamp,
+                                   auth);
 
-        message = soup_message_new ("GET", handshake_url);
-        soup_session_queue_message (scrobbler->priv->session,
-                                    message,
-                                    handshake_cb,
-                                    scrobbler);
-        g_free (handshake_url);
-        g_free (auth);
+  message = soup_message_new ("GET", handshake_url);
+  soup_session_queue_message (scrobbler->priv->session,
+                              message,
+                              handshake_cb,
+                              scrobbler);
+  g_free (handshake_url);
+  g_free (auth);
 }
 
 MafwLastfmTrack *
