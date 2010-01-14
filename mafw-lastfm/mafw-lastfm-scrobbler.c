@@ -73,50 +73,33 @@ static void handshake_cb (SoupSession *session,
                           gpointer user_data);
 
 static void
-mafw_lastfm_scrobbler_dispose (GObject *object)
+mafw_lastfm_scrobbler_finalize (GObject *object)
 {
   MafwLastfmScrobblerPrivate *priv = MAFW_LASTFM_SCROBBLER (object)->priv;
 
   if (priv->session) {
     soup_session_abort (priv->session);
     g_object_unref (priv->session);
-    priv->session = NULL;
   }
 
   g_free (priv->session_id);
-  priv->session_id = NULL;
   g_free (priv->np_url);
-  priv->np_url = NULL;
   g_free (priv->sub_url);
-  priv->sub_url = NULL;
 
   if (priv->scrobbling_queue) {
     g_queue_foreach (priv->scrobbling_queue, (GFunc) mafw_lastfm_track_free, NULL);
     g_queue_free (priv->scrobbling_queue);
-    priv->scrobbling_queue = NULL;
   }
 
-  if (priv->playing_now_id) {
+  if (priv->playing_now_id)
     g_source_remove (priv->playing_now_id);
-    priv->playing_now_id = 0;
-  }
 
-  if (priv->playing_now_track) {
+  if (priv->playing_now_track)
     mafw_lastfm_track_free (priv->playing_now_track);
-    priv->playing_now_track = NULL;
-  }
 
   g_free (priv->username);
-  priv->username = NULL;
   g_free (priv->md5password);
-  priv->md5password = NULL;
 
-  G_OBJECT_CLASS (mafw_lastfm_scrobbler_parent_class)->dispose (object);
-}
-
-static void
-mafw_lastfm_scrobbler_finalize (GObject *object)
-{
   G_OBJECT_CLASS (mafw_lastfm_scrobbler_parent_class)->finalize (object);
 }
 
@@ -126,7 +109,6 @@ mafw_lastfm_scrobbler_class_init (MafwLastfmScrobblerClass *klass)
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   g_type_class_add_private (klass, sizeof (MafwLastfmScrobblerPrivate));
 
-  object_class->dispose = mafw_lastfm_scrobbler_dispose;
   object_class->finalize = mafw_lastfm_scrobbler_finalize;
 }
 
