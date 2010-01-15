@@ -25,7 +25,7 @@
 
 G_BEGIN_DECLS
 
-#define MAFW_LASTFM_TYPE_SCROBBLER mafw_lastfm_scrobbler_get_type()
+#define MAFW_LASTFM_TYPE_SCROBBLER mafw_lastfm_scrobbler_get_type ()
 
 #define MAFW_LASTFM_SCROBBLER(obj) \
   (G_TYPE_CHECK_INSTANCE_CAST ((obj), MAFW_LASTFM_TYPE_SCROBBLER, MafwLastfmScrobbler))
@@ -63,19 +63,24 @@ typedef struct {
   gint number;
 } MafwLastfmTrack;
 
-GType mafw_lastfm_scrobbler_get_type (void);
+GType
+mafw_lastfm_scrobbler_get_type (void);
 
-MafwLastfmScrobbler* mafw_lastfm_scrobbler_new (void);
+MafwLastfmScrobbler *
+mafw_lastfm_scrobbler_new (void);
 
-void                 mafw_lastfm_scrobbler_set_credentials (MafwLastfmScrobbler *scrobbler,
-							    const gchar *username,
-							    const gchar *passwd);
+void
+mafw_lastfm_scrobbler_set_credentials (MafwLastfmScrobbler *scrobbler,
+                                       const gchar *username,
+                                       const gchar *passwd);
 
-void                 mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler);
+void
+mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler);
 
 void
 mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
-				       MafwLastfmTrack     *track);
+				       MafwLastfmTrack *track);
+
 void
 mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
 					MafwLastfmTrack *track);
@@ -86,10 +91,12 @@ mafw_lastfm_scrobbler_flush_queue (MafwLastfmScrobbler *scrobbler);
 void
 mafw_lastfm_scrobbler_suspend (MafwLastfmScrobbler *scrobbler);
 
-MafwLastfmTrack * mafw_lastfm_track_new (void);
-void mafw_lastfm_track_free (MafwLastfmTrack *track);
+MafwLastfmTrack *
+mafw_lastfm_track_new (void);
+
+void
+mafw_lastfm_track_free (MafwLastfmTrack *track);
 
 G_END_DECLS
 
 #endif /* _MAFW_LASTFM_SCROBBLER */
-

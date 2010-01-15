@@ -26,7 +26,7 @@
 
 #include "mafw-lastfm-scrobbler.h"
 
-#define WANTED_RENDERER     "Mafw-Gst-Renderer"
+#define WANTED_RENDERER "Mafw-Gst-Renderer"
 
 gint64 length;
 
@@ -35,9 +35,7 @@ mafw_metadata_lookup_string (GHashTable *table,
                              const gchar *key)
 {
   GValue *value;
-
   value = mafw_metadata_first (table, key);
-
   return value ?  g_value_dup_string (value) : NULL;
 }
 
@@ -46,9 +44,7 @@ mafw_metadata_lookup_int (GHashTable *table,
                           const gchar *key)
 {
   GValue *value;
-
   value = mafw_metadata_first (table, key);
-
   return value ? g_value_get_int (value) : 0;
 }
 
@@ -88,8 +84,9 @@ metadata_callback (MafwRenderer *self,
 }
 
 static void
-state_changed_cb(MafwRenderer *renderer, MafwPlayState state,
-                 gpointer user_data)
+state_changed_cb (MafwRenderer *renderer,
+                  MafwPlayState state,
+                  gpointer user_data)
 {
   switch (state) {
   case Playing:
@@ -114,9 +111,8 @@ metadata_changed_cb (MafwRenderer *renderer,
                      GValueArray *varray,
                      gpointer user_data)
 {
-  if (strcmp(name, "duration") == 0) {
+  if (strcmp (name, "duration") == 0)
     length = g_value_get_int64 (g_value_array_get_nth (varray, 0));
-  }
 }
 
 static void
@@ -124,9 +120,9 @@ renderer_added_cb (MafwRegistry *registry,
                    GObject *renderer,
                    gpointer user_data)
 {
-  if (MAFW_IS_RENDERER(renderer)) {
+  if (MAFW_IS_RENDERER (renderer)) {
     const gchar *name =
-      mafw_extension_get_name (MAFW_EXTENSION(renderer));
+      mafw_extension_get_name (MAFW_EXTENSION (renderer));
 
     if (strcmp (name, WANTED_RENDERER) == 0) {
       g_signal_connect (renderer,
@@ -214,7 +210,8 @@ on_credentials_file_changed (GFileMonitor *monitor,
 }
 
 static void
-monitor_credentials_file (const gchar *path, MafwLastfmScrobbler *scrobbler)
+monitor_credentials_file (const gchar *path,
+                          MafwLastfmScrobbler *scrobbler)
 {
   GFile * file;
   GFileMonitor *monitor;
@@ -243,13 +240,13 @@ int main ()
 
   scrobbler = mafw_lastfm_scrobbler_new ();
 
-  registry = MAFW_REGISTRY(mafw_registry_get_instance());
+  registry = MAFW_REGISTRY (mafw_registry_get_instance ());
   if (registry == NULL) {
     g_warning ("Failed to get register.\n");
     return 1;
   }
 
-  mafw_shared_init(registry, &error);
+  mafw_shared_init (registry, &error);
   if (error != NULL) {
     g_warning ("Failed to initialize the shared library.\n");
     return 1;
@@ -257,13 +254,13 @@ int main ()
 
   g_signal_connect (registry,
                     "renderer-added",
-                    G_CALLBACK(renderer_added_cb), scrobbler);
+                    G_CALLBACK (renderer_added_cb), scrobbler);
   /* Also, check for already started extensions */
-  renderers = mafw_registry_get_renderers(registry);
+  renderers = mafw_registry_get_renderers (registry);
   while (renderers) {
     renderer_added_cb (registry,
-                       G_OBJECT(renderers->data), scrobbler);
-    renderers = g_list_next(renderers);
+                       G_OBJECT (renderers->data), scrobbler);
+    renderers = g_list_next (renderers);
   }
 
   file = g_build_filename (g_get_home_dir (),
@@ -277,4 +274,3 @@ int main ()
 
   return 0;
 }
-

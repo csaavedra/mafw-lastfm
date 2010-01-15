@@ -326,15 +326,14 @@ set_playing_now_cb (SoupSession *session,
 
   if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
     g_print ("Playing-now: %s", message->response_body->data);
-    if (strcmp (message->response_body->data, "BADSESSION\n") == 0) {
+    if (strcmp (message->response_body->data, "BADSESSION\n") == 0)
       mafw_lastfm_scrobbler_defer_handshake (scrobbler);
-    }
   }
 }
 
 void
 mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
-                                       MafwLastfmTrack     *encoded)
+                                       MafwLastfmTrack *encoded)
 {
   gchar *post_data;
   SoupMessage *message;
@@ -371,14 +370,13 @@ scrobble_real (MafwLastfmScrobbler *scrobbler)
   GList *list = NULL;
   gint tracks = 0;
 
-  if (scrobbler->priv->status != MAFW_LASTFM_SCROBBLER_READY) {
+  if (scrobbler->priv->status != MAFW_LASTFM_SCROBBLER_READY)
     return;
-  }
 
   while (!g_queue_is_empty (scrobbler->priv->scrobbling_queue) && tracks < 50) {
     track = g_queue_pop_head (scrobbler->priv->scrobbling_queue);
     list = g_list_append (list, track);
-    tracks ++;
+    tracks++;
   }
 
   if (list) {
@@ -519,24 +517,23 @@ parse_handshake_response (MafwLastfmScrobbler *scrobbler,
   response = g_strsplit (response_data, "\n", 5);
 
   if (g_str_has_prefix (response [0], "OK")) {
-
     g_free (scrobbler->priv->session_id);
     g_free (scrobbler->priv->np_url);
     g_free (scrobbler->priv->sub_url);
 
-    scrobbler->priv->session_id = response [1];
+    scrobbler->priv->session_id = response[1];
     scrobbler->priv->np_url = response[2];
     scrobbler->priv->sub_url = response[3];
 
     /* We take ownership on the relevant parsed data, free the
        array and response code. */
-    g_free (response [0]);
-    g_free (response [4]);
+    g_free (response[0]);
+    g_free (response[4]);
     g_free (response);
 
     return TRUE;
   } else {
-    g_warning ("Couldn't handshake: %s", response [0]);
+    g_warning ("Couldn't handshake: %s", response[0]);
     g_strfreev (response);
 
     return FALSE;
