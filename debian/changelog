@@ -1,3 +1,9 @@
+mafw-lastfm (0.0.3-2) unstable; urgency=low
+
+  * Add XSBC-Bugtracker to debian/control.
+
+ -- Claudio Saavedra <csaavedra@igalia.com>  Thu, 15 Apr 2010 10:51:20 +0300
+
 mafw-lastfm (0.0.3-1) unstable; urgency=low
 
   * New upstream release.
