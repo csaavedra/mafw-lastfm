@@ -545,7 +545,10 @@ mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler)
       scrobbler->priv->retry_message = NULL;
     }
   }
-
+  if (scrobbler->priv->handshake_id) {
+    g_source_remove (scrobbler->priv->handshake_id);
+    scrobbler->priv->handshake_id = 0;
+  }
   scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_HANDSHAKING;
 
   auth = get_auth_string (scrobbler->priv->md5password, &timestamp);
