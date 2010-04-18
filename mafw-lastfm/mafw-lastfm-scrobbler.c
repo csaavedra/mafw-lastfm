@@ -487,6 +487,8 @@ parse_handshake_response (MafwLastfmScrobbler *scrobbler,
     g_free (response);
 
     retval = AS_RESPONSE_OK;
+  } else if (g_str_has_prefix (response [0], "BADTIME")) {
+    retval = AS_RESPONSE_BADTIME;
   } else {
     retval = AS_RESPONSE_OTHER;
   }
@@ -528,6 +530,10 @@ handshake_cb (SoupSession *session,
       scrobbler->priv->retry_interval = 5;
       return;
     case AS_RESPONSE_BADTIME:
+      scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
+      scrobbler->priv->retry_interval = 5;
+      mafw_lastfm_scrobbler_handshake (scrobbler);
+      return;
     case AS_RESPONSE_OTHER:
       break;
     }
