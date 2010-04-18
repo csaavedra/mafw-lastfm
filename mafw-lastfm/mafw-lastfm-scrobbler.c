@@ -454,12 +454,21 @@ get_auth_string (const gchar *md5passwd,
   return md5;
 }
 
-static gboolean
+typedef enum {
+  AS_RESPONSE_OK,
+  /* AS_RESPONSE_BANNED, */
+  /* AS_RESPONSE_BADAUTH, */
+  AS_RESPONSE_BADTIME,
+  /* AS_RESPONSE_FAILED, */
+  AS_RESPONSE_OTHER
+} AsHandshakeResponse;
+
+static AsHandshakeResponse
 parse_handshake_response (MafwLastfmScrobbler *scrobbler,
                           const gchar *response_data)
 {
   gchar **response;
-
+  AsHandshakeResponse retval;
   response = g_strsplit (response_data, "\n", 5);
 
   if (g_str_has_prefix (response [0], "OK")) {
@@ -477,13 +486,17 @@ parse_handshake_response (MafwLastfmScrobbler *scrobbler,
     g_free (response[4]);
     g_free (response);
 
-    return TRUE;
+    retval = AS_RESPONSE_OK;
   } else {
+    retval = AS_RESPONSE_OTHER;
+  }
+
+  if (retval != AS_RESPONSE_OK) {
     g_warning ("Couldn't handshake: %s", response[0]);
     g_strfreev (response);
-
-    return FALSE;
   }
+
+  return retval;
 }
 
 static gboolean
@@ -509,10 +522,14 @@ handshake_cb (SoupSession *session,
 
   if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
     g_print ("%s", message->response_body->data);
-    if (parse_handshake_response (scrobbler, message->response_body->data)) {
+    switch (parse_handshake_response (scrobbler, message->response_body->data)) {
+    case AS_RESPONSE_OK:
       scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_READY;
       scrobbler->priv->retry_interval = 5;
       return;
+    case AS_RESPONSE_BADTIME:
+    case AS_RESPONSE_OTHER:
+      break;
     }
   }
 
