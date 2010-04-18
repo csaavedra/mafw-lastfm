@@ -46,6 +46,7 @@ struct MafwLastfmScrobblerPrivate {
   gchar *sub_url;
   GQueue *scrobbling_queue;
   guint handshake_id;
+  guint retry_id;
   guint playing_now_id;
   MafwLastfmTrack *playing_now_track;
 
@@ -124,6 +125,7 @@ mafw_lastfm_scrobbler_init (MafwLastfmScrobbler *scrobbler)
   priv->sub_url = NULL;
   priv->scrobbling_queue = g_queue_new ();
   priv->handshake_id = 0;
+  priv->retry_id = 0;
 
   priv->retry_message = NULL;
   priv->retry_interval = 5;
@@ -518,9 +520,9 @@ handshake_cb (SoupSession *session,
   g_print ("message failed, trying to send in %d seconds.\n", scrobbler->priv->retry_interval);
   scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
   scrobbler->priv->retry_message = g_object_ref (message);
-  scrobbler->priv->handshake_id = g_timeout_add_seconds (scrobbler->priv->retry_interval,
-                                                         retry_queue_message,
-                                                         scrobbler);
+  scrobbler->priv->retry_id = g_timeout_add_seconds (scrobbler->priv->retry_interval,
+                                                     retry_queue_message,
+                                                     scrobbler);
   if (scrobbler->priv->retry_interval < 320)
     scrobbler->priv->retry_interval *= 2;
 }
@@ -535,9 +537,9 @@ mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler)
 
   g_return_if_fail (scrobbler->priv->status != MAFW_LASTFM_SCROBBLER_HANDSHAKING);
   g_return_if_fail (scrobbler->priv->username || scrobbler->priv->md5password);
-  if (scrobbler->priv->handshake_id) {
-    g_source_remove (scrobbler->priv->handshake_id);
-    scrobbler->priv->handshake_id = 0;
+  if (scrobbler->priv->retry_id) {
+    g_source_remove (scrobbler->priv->retry_id);
+    scrobbler->priv->retry_id = 0;
     if (scrobbler->priv->retry_message) {
       g_object_unref (scrobbler->priv->retry_message);
       scrobbler->priv->retry_message = NULL;
