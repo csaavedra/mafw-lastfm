@@ -1,2 +1,1 @@
-autoreconf -i -s
-
+autoreconf -i
