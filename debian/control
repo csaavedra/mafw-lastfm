@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Claudio Saavedra <csaavedra@igalia.com>
 Build-Depends: debhelper (>= 5), pkg-config, cdbs, upstart-dev, libsoup2.4-dev, libglib2.0-dev, libmafw-shared0-dev, libmafw0-dev, hildon-control-panel-dev, libosso-dev, libhildon1-dev, libgtk2.0-dev
 Standards-Version: 3.8.3
-XSBC-Bugtracker: mailto:mafw-lastfm-devel@garage.maemo.org
+XSBC-Bugtracker: https://bugs.maemo.org/enter_bug.cgi?product=mafw-lastfm
 
 Package: mafw-lastfm
 Architecture: any
