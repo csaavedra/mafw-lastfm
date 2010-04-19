@@ -505,6 +505,8 @@ static gboolean
 retry_queue_message (gpointer userdata)
 {
   MafwLastfmScrobblerPrivate *priv = MAFW_LASTFM_SCROBBLER (userdata)->priv;
+
+  priv->retry_id = 0;
   g_print ("retrying to queue message\n");
   soup_session_queue_message (priv->session,
                               priv->retry_message,
