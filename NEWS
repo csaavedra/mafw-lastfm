@@ -1,3 +1,10 @@
+[0.0.4 Release]
+
+- Monitor credentials file, no need for reboot!
+- Several fixes to handshaking after offline periods.
+- Less polling during now-playing submissions.
+- Code fixes and cleanups.
+
 [0.0.3 Release]
 
 - Credentials file should be stored now in $HOME/.osso/mafw-lastfm instead.
