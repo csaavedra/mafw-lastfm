@@ -42,6 +42,13 @@ You can suscribe in
 
   https://garage.maemo.org/mailman/listinfo/mafw-lastfm-devel
 
+bug reports
+-----------
+
+You can report bugs in
+
+  https://bugs.maemo.org/enter_bug.cgi?product=mafw-lastfm
+
 source code
 -----------
 
@@ -61,10 +68,11 @@ mafw-lastfm is in an early stage and has plenty of limitations:
 
 - Songs are not serialized, so you'll loose the tracks you've listened if you restart
   the daemon.
+- The daemon won't work properly behind a proxy.
 
 These features will come with time.
 
 audioscrobbler
 --------------
 
-The audioscrobbler icon is part of the Last.fm player for Linux sources.
+The audioscrobbler icon is part of the sources of the Last.fm player.
