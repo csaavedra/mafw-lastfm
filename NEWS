@@ -1,3 +1,7 @@
+[0.0.5 Release]
+
+- Do not lose cached tracks after returning from offline.
+
 [0.0.4 Release]
 
 - Monitor credentials file, no need for reboot!
