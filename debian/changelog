@@ -1,3 +1,10 @@
+mafw-lastfm (0.0.5-1) unstable; urgency=low
+
+  * New upstream release.
+  * rules: disable cast checks by default.
+
+ -- Claudio Saavedra <csaavedra@igalia.com>  Thu, 22 Apr 2010 01:03:53 +0300
+
 mafw-lastfm (0.0.4-1) unstable; urgency=low
 
   * New upstream release.

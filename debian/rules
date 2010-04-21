@@ -5,6 +5,10 @@ include /usr/share/cdbs/1/rules/debhelper.mk
 
 config.status: $(DEB_SRCDIR)/configure
 
+ifeq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
+    CFLAGS += -DG_DISABLE_CAST_CHECKS
+endif
+
 $(DEB_SRCDIR)/configure:
 	AUTOGEN_SUBDIR_MODE=1 NOCONFIGURE=yes $(DEB_SRCDIR)/autogen.sh
 
