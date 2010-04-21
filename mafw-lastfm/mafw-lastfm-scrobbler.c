@@ -207,7 +207,7 @@ scrobble_cb (SoupSession *session,
 {
   if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
     g_print ("Scrobble: %s", message->response_body->data);
-    if (strcmp (message->response_body->data, "BADSESSION\n") == 0)
+    if (!g_str_has_prefix (message->response_body->data, "OK"))
       mafw_lastfm_scrobbler_scrobbling_failed (MAFW_LASTFM_SCROBBLER (user_data));
   } else {
     mafw_lastfm_scrobbler_scrobbling_failed (MAFW_LASTFM_SCROBBLER (user_data));
