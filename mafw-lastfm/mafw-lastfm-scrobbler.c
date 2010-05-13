@@ -214,6 +214,25 @@ scrobble_cb (SoupSession *session,
   }
 }
 
+static void
+scrobbler_send_message (MafwLastfmScrobbler *scrobbler,
+                         const char *url,
+                         const char *body,
+                         SoupSessionCallback callback)
+{
+  SoupMessage *message;
+  message = soup_message_new ("POST", url);
+  soup_message_set_request (message,
+                            "application/x-www-form-urlencoded",
+                            SOUP_MEMORY_TAKE,
+                            body,
+                            strlen (body));
+  soup_session_queue_message (scrobbler->priv->session,
+                              message,
+                              callback,
+                              scrobbler);
+}
+
 /**
  * mafw_lastfm_scrobbler_scrobble_list:
  * @scrobbler: a scrobbler
@@ -230,7 +249,6 @@ mafw_lastfm_scrobbler_scrobble_list (MafwLastfmScrobbler *scrobbler,
   gchar *post_data;
   gchar *track_data, *tmp;
   MafwLastfmTrack *track;
-  SoupMessage *message;
 
   post_data = g_strdup_printf ("s=%s", scrobbler->priv->session_id);
 
@@ -251,16 +269,8 @@ mafw_lastfm_scrobbler_scrobble_list (MafwLastfmScrobbler *scrobbler,
     g_free (tmp);
   }
 
-  message = soup_message_new ("POST", scrobbler->priv->sub_url);
-  soup_message_set_request (message,
-                            "application/x-www-form-urlencoded",
-                            SOUP_MEMORY_TAKE,
-                            post_data,
-                            strlen (post_data));
-  soup_session_queue_message (scrobbler->priv->session,
-                              message,
-                              scrobble_cb,
-                              scrobbler);
+  scrobbler_send_message (scrobbler, scrobbler->priv->sub_url,
+                           post_data, scrobble_cb);
 }
 
 static void
@@ -282,7 +292,6 @@ mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
                                        MafwLastfmTrack *encoded)
 {
   gchar *post_data;
-  SoupMessage *message;
 
   g_return_if_fail (MAFW_LASTFM_IS_SCROBBLER (scrobbler));
   g_return_if_fail (encoded);
@@ -296,17 +305,8 @@ mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
                                encoded->length,
                                encoded->number);
 
-  message = soup_message_new ("POST",
-                              scrobbler->priv->np_url);
-  soup_message_set_request (message,
-                            "application/x-www-form-urlencoded",
-                            SOUP_MEMORY_TAKE,
-                            post_data,
-                            strlen (post_data));
-  soup_session_queue_message (scrobbler->priv->session,
-                              message,
-                              set_playing_now_cb,
-                              scrobbler);
+  scrobbler_send_message (scrobbler, scrobbler->priv->np_url,
+                          post_data, set_playing_now_cb);
 }
 
 static void
