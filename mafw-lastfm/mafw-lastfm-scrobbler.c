@@ -39,7 +39,7 @@ typedef enum {
   MAFW_LASTFM_SCROBBLER_SUBMITTING
 } MafwLastfmScrobblerStatus;
 
-struct MafwLastfmScrobblerPrivate {
+struct _MafwLastfmScrobblerPrivate {
   SoupSession *session;
   gchar *session_id;
   gchar *np_url;

@@ -42,8 +42,8 @@ G_BEGIN_DECLS
 #define MAFW_LASTFM_SCROBBLER_GET_CLASS(obj) \
   (G_TYPE_INSTANCE_GET_CLASS ((obj), MAFW_LASTFM_TYPE_SCROBBLER, MafwLastfmScrobblerClass))
 
-typedef struct MafwLastfmScrobblerPrivate MafwLastfmScrobblerPrivate;
 
+typedef struct _MafwLastfmScrobblerPrivate MafwLastfmScrobblerPrivate;
 typedef struct {
   GObject parent;
   MafwLastfmScrobblerPrivate *priv;
