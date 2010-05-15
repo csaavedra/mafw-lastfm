@@ -229,13 +229,23 @@ monitor_credentials_file (const gchar *path,
   g_object_unref (file);
 }
 
+static void
+prepare_authentication (MafwLastfmScrobbler *scrobbler)
+{
+  gchar *file;
+  file = g_build_filename (g_get_home_dir (),
+                           MAFW_LASTFM_CREDENTIALS_FILE, NULL);
+  monitor_credentials_file (file, scrobbler);
+  authenticate_from_file (scrobbler, file);
+  g_free (file);
+}
+
 int main (void)
 {
   GError *error = NULL;
   MafwRegistry *registry;
   GMainLoop *main_loop;
   MafwLastfmScrobbler *scrobbler;
-  gchar *file;
 
   g_type_init ();
   if (!g_thread_supported ())
@@ -255,15 +265,10 @@ int main (void)
     return 1;
   }
 
+  prepare_authentication (scrobbler);
   g_signal_connect (registry,
                     "renderer-added",
                     G_CALLBACK (renderer_added_cb), scrobbler);
-
-  file = g_build_filename (g_get_home_dir (),
-                           MAFW_LASTFM_CREDENTIALS_FILE, NULL);
-  monitor_credentials_file (file, scrobbler);
-  authenticate_from_file (scrobbler, file);
-  g_free (file);
 
   main_loop = g_main_loop_new (NULL, FALSE);
   g_main_loop_run (main_loop);
