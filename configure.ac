@@ -11,6 +11,7 @@ AM_PROG_CC_C_O
 
 GLIB_VERSION=2.16.0
 LIBSOUP_VERSION=2.24.0
+CONIC_VERSION=0.16
 
 PKG_CHECK_MODULES([MAFW_LASTFM], [glib-2.0 >= $GLIB_VERSION
 				 mafw-shared
@@ -31,6 +32,33 @@ AC_SUBST(MAFW_LASTFM_CPA_LIBS)
 
 hildoncpdesktopentrydir=`pkg-config hildon-control-panel --variable=plugindesktopentrydir`
 AC_SUBST(hildoncpdesktopentrydir)
+
+AC_ARG_ENABLE(conic,
+AS_HELP_STRING([--disable-conic],
+               [Disable Conic support]),,
+               [enable_conic=auto])
+
+if test "x$enable_conic" != "xno"; then
+   PKG_CHECK_MODULES(CONIC,
+                     [conic >= $CONIC_VERSION],
+                     [have_conic=yes],
+                     [have_conic=no])
+   AC_SUBST(CONIC_LIBS)
+   AC_SUBST(CONIC_CFLAGS)
+
+   if test "x$have_conic" = "xyes"; then
+           AC_DEFINE(HAVE_CONIC, [], [Define if we have Conic])
+   fi
+else
+   have_conic="no (disabled)"
+fi
+
+if test "x$enable_conic" = "xyes"; then
+   if test "x$have_conic" != "xyes"; then
+      AC_MSG_ERROR([Couldn't find Conic >= $CONIC_REQUIRED.])
+   fi
+fi
+AM_CONDITIONAL(HAVE_CONIC, test "x$have_conic" = "xyes")
 
 CFLAGS="$CFLAGS -Wall -Werror -Wmissing-prototypes -Wmissing-declarations -Wno-format"
 

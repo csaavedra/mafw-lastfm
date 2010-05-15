@@ -5,5 +5,5 @@ mafw_lastfm_SOURCES = 		\
 	mafw-lastfm-scrobbler.c \
 	mafw-lastfm-scrobbler.h
 
-mafw_lastfm_LDADD = $(MAFW_LASTFM_LIBS)
-mafw_lastfm_CPPFLAGS = $(MAFW_LASTFM_CFLAGS)
+mafw_lastfm_LDADD = $(MAFW_LASTFM_LIBS) $(CONIC_LIBS)
+mafw_lastfm_CPPFLAGS = $(MAFW_LASTFM_CFLAGS) $(CONIC_CFLAGS)

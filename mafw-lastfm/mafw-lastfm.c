@@ -23,12 +23,23 @@
 #include <libmafw-shared/mafw-shared.h>
 #include <gio/gio.h>
 #include <string.h>
+#include "config.h"
+#include <libsoup/soup.h>
+#ifdef HAVE_CONIC
+ #include <conic.h>
+ #include <dbus/dbus.h>
+ #include <dbus/dbus-glib-lowlevel.h>
+#endif
 
 #include "mafw-lastfm-scrobbler.h"
 
 #define WANTED_RENDERER "Mafw-Gst-Renderer"
 
 gint64 length;
+#ifdef HAVE_CONIC
+  ConIcConnection *connection;
+  DBusConnection* dbus_system;
+#endif
 
 static gchar *
 mafw_metadata_lookup_string (GHashTable *table,
@@ -240,6 +251,54 @@ prepare_authentication (MafwLastfmScrobbler *scrobbler)
   g_free (file);
 }
 
+#ifdef HAVE_CONIC
+static void
+on_conic_connection_event (ConIcConnection *connection,
+			    ConIcConnectionEvent *event,
+			    MafwLastfmScrobbler *scrobbler)
+{
+  SoupURI *proxy_uri = NULL;
+  ConIcConnectionStatus status;
+  const gchar *proxy_host;
+  gint proxy_port;
+  static gboolean first_time = TRUE;
+
+  /* GSList *ignore_list, *iter; */
+
+  if (status != CON_IC_STATUS_CONNECTED &&
+      status == CON_IC_STATUS_DISCONNECTED)
+    return;
+
+  status = con_ic_connection_event_get_status (event);
+  if (status == CON_IC_STATUS_CONNECTED) {
+    ConIcProxyMode mode = con_ic_connection_get_proxy_mode (connection);
+
+    switch (mode) {
+    case CON_IC_PROXY_MODE_MANUAL:
+      proxy_host = con_ic_connection_get_proxy_host (connection, CON_IC_PROXY_PROTOCOL_HTTP);
+      proxy_port = con_ic_connection_get_proxy_port (connection, CON_IC_PROXY_PROTOCOL_HTTP);
+      proxy_uri = soup_uri_new (NULL);
+      soup_uri_set_scheme (proxy_uri, "http");
+      soup_uri_set_path (proxy_uri, proxy_host);
+      soup_uri_set_port (proxy_uri, proxy_port);
+      break;
+      /* case CON_IC_PROXY_MODE_AUTO: */
+      /* case CON_IC_PROXY_MODE_NONE: */
+      /*   break */
+    default:
+      break;
+    }
+  }
+
+  mafw_lastfm_scrobbler_set_proxy (scrobbler, proxy_uri);
+
+  if (first_time) {
+    prepare_authentication (scrobbler);
+    first_time = FALSE;
+  }
+}
+#endif /* HAVE_CONIC */
+
 int main (void)
 {
   GError *error = NULL;
@@ -265,13 +324,31 @@ int main (void)
     return 1;
   }
 
+#ifdef HAVE_CONIC
+  dbus_system = dbus_bus_get (DBUS_BUS_SYSTEM, NULL);
+  dbus_connection_setup_with_g_main (dbus_system, NULL);
+  connection = con_ic_connection_new ();
+  g_object_set (connection,
+		"automatic-connection-events", TRUE,
+		NULL);
+  g_signal_connect (connection, "connection-event",
+		    G_CALLBACK (on_conic_connection_event), scrobbler);
+  g_assert (con_ic_connection_connect (connection, CON_IC_CONNECT_FLAG_AUTOMATICALLY_TRIGGERED));
+#else
   prepare_authentication (scrobbler);
+#endif
+
   g_signal_connect (registry,
                     "renderer-added",
                     G_CALLBACK (renderer_added_cb), scrobbler);
 
   main_loop = g_main_loop_new (NULL, FALSE);
   g_main_loop_run (main_loop);
+
+#ifdef HAVE_CONIC
+  g_object_unref (connection);
+  g_object_unref (dbus_system);
+#endif
 
   return 0;
 }
