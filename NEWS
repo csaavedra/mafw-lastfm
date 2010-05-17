@@ -1,3 +1,7 @@
+[0.0.6 Release]
+
+- Plug a very nasty leak.
+
 [0.0.5 Release]
 
 - Do not lose cached tracks after returning from offline.
