@@ -91,6 +91,12 @@ mafw_lastfm_scrobbler_flush_queue (MafwLastfmScrobbler *scrobbler);
 void
 mafw_lastfm_scrobbler_suspend (MafwLastfmScrobbler *scrobbler);
 
+SoupURI *
+mafw_lastfm_scrobbler_get_proxy (MafwLastfmScrobbler *scrobbler);
+
+void
+mafw_lastfm_scrobbler_set_proxy (MafwLastfmScrobbler *scrobbler, SoupURI *proxy_uri);
+
 MafwLastfmTrack *
 mafw_lastfm_track_new (void);
 

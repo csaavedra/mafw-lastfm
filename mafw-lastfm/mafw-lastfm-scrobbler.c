@@ -373,6 +373,34 @@ mafw_lastfm_scrobbler_suspend (MafwLastfmScrobbler *scrobbler)
   scrobbler->priv->suspended_track = g_queue_pop_tail (scrobbler->priv->scrobbling_queue);
 }
 
+SoupURI *
+mafw_lastfm_scrobbler_get_proxy (MafwLastfmScrobbler *scrobbler)
+{
+  SoupURI *uri;
+
+  g_return_val_if_fail (MAFW_LASTFM_IS_SCROBBLER (scrobbler), NULL);
+
+  g_object_get (scrobbler->priv->session, "proxy-uri", &uri, NULL);
+
+  return uri;
+}
+
+void
+mafw_lastfm_scrobbler_set_proxy (MafwLastfmScrobbler *scrobbler,
+                                 SoupURI *proxy_uri)
+{
+  SoupURI *prev_uri;
+
+  g_return_if_fail (MAFW_LASTFM_IS_SCROBBLER (scrobbler));
+
+  g_object_get (scrobbler->priv->session, "proxy-uri", &prev_uri, NULL);
+    if ((!prev_uri && proxy_uri) ||
+      (prev_uri && !proxy_uri) ||
+      ((proxy_uri && prev_uri) && !soup_uri_equal (proxy_uri, prev_uri)))
+      g_object_set (scrobbler->priv->session, "proxy-uri", proxy_uri, NULL);
+}
+
+
 static gboolean
 defer_set_playing_now_cb (MafwLastfmScrobbler *scrobbler)
 {
