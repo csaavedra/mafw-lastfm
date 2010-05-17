@@ -205,12 +205,18 @@ scrobble_cb (SoupSession *session,
              SoupMessage *message,
              gpointer user_data)
 {
+  MafwLastfmScrobbler *scrobbler = MAFW_LASTFM_SCROBBLER (user_data);
+
   if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
     g_print ("Scrobble: %s", message->response_body->data);
-    if (!g_str_has_prefix (message->response_body->data, "OK"))
-      mafw_lastfm_scrobbler_scrobbling_failed (MAFW_LASTFM_SCROBBLER (user_data));
+    if (g_str_has_prefix (message->response_body->data, "OK")) {
+      g_list_foreach (scrobbler->priv->scrobble_list, (GFunc)mafw_lastfm_track_free, NULL);
+      g_list_free (scrobbler->priv->scrobble_list);
+      scrobbler->priv->scrobble_list = NULL;
+    } else
+      mafw_lastfm_scrobbler_scrobbling_failed (scrobbler);
   } else {
-    mafw_lastfm_scrobbler_scrobbling_failed (MAFW_LASTFM_SCROBBLER (user_data));
+    mafw_lastfm_scrobbler_scrobbling_failed (scrobbler);
   }
 }
 
