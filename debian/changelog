@@ -1,3 +1,10 @@
+mafw-lastfm (0.0.6-1) unstable; urgency=low
+
+  * New upstream release.
+  * Fixes a very nasty memory leak.
+
+ -- Claudio Saavedra <csaavedra@igalia.com>  Tue, 18 May 2010 03:00:01 +0300
+
 mafw-lastfm (0.0.5-1) unstable; urgency=low
 
   * New upstream release.
