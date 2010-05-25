@@ -185,7 +185,7 @@ mafw_lastfm_scrobbler_defer_handshake (MafwLastfmScrobbler *scrobbler)
 }
 
 static void
-mafw_lastfm_scrobbler_scrobbling_failed (MafwLastfmScrobbler *scrobbler)
+mafw_lastfm_scrobbler_rebuild_queue (MafwLastfmScrobbler *scrobbler)
 {
   GList *iter;
 
@@ -194,9 +194,15 @@ mafw_lastfm_scrobbler_scrobbling_failed (MafwLastfmScrobbler *scrobbler)
     g_queue_push_head (scrobbler->priv->scrobbling_queue,
                        iter->data);
   }
+
   g_list_free (scrobbler->priv->scrobble_list);
   scrobbler->priv->scrobble_list = NULL;
+}
 
+static void
+mafw_lastfm_scrobbler_scrobbling_failed (MafwLastfmScrobbler *scrobbler)
+{
+  mafw_lastfm_scrobbler_rebuild_queue (scrobbler);
   mafw_lastfm_scrobbler_defer_handshake (scrobbler);
 }
 
