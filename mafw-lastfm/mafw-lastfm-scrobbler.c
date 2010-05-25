@@ -282,7 +282,7 @@ mafw_lastfm_scrobbler_scrobble_list (MafwLastfmScrobbler *scrobbler,
   }
 
   scrobbler_send_message (scrobbler, scrobbler->priv->sub_url,
-                           post_data, scrobble_cb);
+                          post_data, scrobble_cb);
 }
 
 static void
