@@ -201,6 +201,14 @@ mafw_lastfm_scrobbler_scrobbling_failed (MafwLastfmScrobbler *scrobbler)
 }
 
 static void
+mafw_lastfm_scrobbler_clean_scrobble_list (MafwLastfmScrobbler *scrobbler)
+{
+  g_list_foreach (scrobbler->priv->scrobble_list, (GFunc)mafw_lastfm_track_free, NULL);
+  g_list_free (scrobbler->priv->scrobble_list);
+  scrobbler->priv->scrobble_list = NULL;
+}
+
+static void
 scrobble_cb (SoupSession *session,
              SoupMessage *message,
              gpointer user_data)
@@ -210,9 +218,7 @@ scrobble_cb (SoupSession *session,
   if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
     g_print ("Scrobble: %s", message->response_body->data);
     if (g_str_has_prefix (message->response_body->data, "OK")) {
-      g_list_foreach (scrobbler->priv->scrobble_list, (GFunc)mafw_lastfm_track_free, NULL);
-      g_list_free (scrobbler->priv->scrobble_list);
-      scrobbler->priv->scrobble_list = NULL;
+      mafw_lastfm_scrobbler_clean_scrobble_list (scrobbler);
     } else
       mafw_lastfm_scrobbler_scrobbling_failed (scrobbler);
   } else {
