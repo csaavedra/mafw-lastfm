@@ -26,6 +26,7 @@
 
 #define CLIENT_ID "maf"
 #define CLIENT_VERSION "0.0.1"
+#define MAFW_LASTFM_QUEUE_FILE ".osso/mafw-lastfm.queue"
 
 G_DEFINE_TYPE (MafwLastfmScrobbler, mafw_lastfm_scrobbler, G_TYPE_OBJECT);
 
@@ -68,6 +69,11 @@ static gboolean mafw_lastfm_track_cmp (MafwLastfmTrack *a,
                                        MafwLastfmTrack *b);
 static  MafwLastfmTrack *
 mafw_lastfm_track_dup (MafwLastfmTrack *track);
+
+static void
+mafw_lastfm_scrobbler_flush_to_disk (MafwLastfmScrobbler *scrobbler);
+static void
+mafw_lastfm_scrobbler_scrobble_cached (MafwLastfmScrobbler *scrobbler);
 
 static void handshake_cb (SoupSession *session,
                           SoupMessage *message,
@@ -612,6 +618,150 @@ mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler)
                               scrobbler);
   g_free (handshake_url);
   g_free (auth);
+}
+
+static void
+mafw_lastfm_scrobbler_flush_to_disk (MafwLastfmScrobbler *scrobbler)
+{
+  MafwLastfmTrack *track;
+  GFileOutputStream *outstream;
+  gchar *track_data, *buffer, *tmp;
+  GList *iter;
+  GError *error = NULL;
+  gboolean success = TRUE;
+  GFile *file;
+  gchar *filename;
+
+  buffer = g_strdup ("");
+
+  filename = g_build_filename (g_get_home_dir(),
+			       MAFW_LASTFM_QUEUE_FILE, NULL);
+  file = g_file_new_for_path (filename);
+  g_free (filename);
+
+  outstream = g_file_append_to (file, G_FILE_CREATE_PRIVATE, NULL, &error);
+
+  if (error) {
+    g_print ("Couldn't open output file: %s\n", error->message);
+    g_error_free (error);
+    goto out;
+  }
+
+  for (iter = scrobbler->priv->scrobble_list; iter; iter = g_list_next (iter)) {
+    track = (MafwLastfmTrack *) iter->data;
+    track_data = g_strdup_printf ("%s&%s&%li&%c&%lld&%s&%i\n",
+                                  track->artist,
+                                  track->title,
+                                  track->timestamp,
+                                  track->source,
+                                  /* ratio skipped */
+                                  track->length,
+                                  track->album ? track->album : "",
+                                  track->number
+                                  /* musicbrainz id skipped */);
+    tmp = g_strconcat (buffer, track_data, NULL);
+    g_free (buffer);
+    g_free (track_data);
+    buffer = tmp;
+  }
+
+  g_output_stream_write (G_OUTPUT_STREAM (outstream), buffer, strlen (buffer), NULL, &error);
+
+  if (error) {
+    g_print ("Error appending tracks: %s\n", error->message);
+    g_error_free (error);
+    success = FALSE;
+    error = NULL;
+  }
+
+  g_output_stream_close (G_OUTPUT_STREAM (outstream), NULL, &error);
+  if (error) {
+    g_print ("Error closing file: %s\n", error->message);
+    success = FALSE;
+    g_error_free (error);
+  }
+
+  if (success) {
+    mafw_lastfm_scrobbler_clean_scrobble_list (scrobbler);
+  }
+
+out:
+  g_free (buffer);
+  g_object_unref (outstream);
+  g_object_unref (file);
+}
+
+static void
+cached_scrobble_cb (SoupSession *session,
+		    SoupMessage *message,
+		    gpointer user_data)
+{
+  GFile *file;
+  gchar *filename;
+
+  if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
+    if (g_str_has_prefix (message->response_body->data, "OK")) {
+      filename = g_build_filename (g_get_home_dir (), MAFW_LASTFM_QUEUE_FILE, NULL);
+      file = g_file_new_for_path (filename);
+      g_file_delete (file, NULL, NULL);
+      g_object_unref (file);
+      g_free (filename);
+    }
+  }
+}
+
+static void
+mafw_lastfm_scrobbler_scrobble_cached (MafwLastfmScrobbler *scrobbler)
+{
+  gchar *filename;
+  gchar *buffer;
+  gchar **tracks = NULL;
+  gchar **new_tracks;
+  gchar **track;
+  gchar *post_data;
+  gint i, n;
+
+  filename = g_build_filename (g_get_home_dir(),
+			       MAFW_LASTFM_QUEUE_FILE, NULL);
+
+  if (g_file_get_contents (filename, &buffer, NULL, NULL) && buffer) {
+    tracks = g_strsplit (buffer, "\n", 0);
+    g_free (buffer);
+    buffer = NULL;
+  }
+  g_free (filename);
+
+  if (tracks) {
+    n = g_strv_length (tracks);
+    new_tracks = g_new0 (gchar *, n);
+    for (i = 0; i < n - 1; i++) {
+      track = g_strsplit (tracks[i], "&", 0);
+      new_tracks[i] = g_strdup_printf ("a[%i]=%s&t[%i]=%s&i[%i]=%s&o[%i]=%s&r[%i]=&l[%i]=%s&b[%i]=%s&n[%i]=%s&m[%i]=",
+                                       i, track [0],
+                                       i, track [1],
+                                       i, track [2],
+                                       i, track [3],
+                                       i, /* ratio skipped */
+                                       i, track [4],
+                                       i, track [5] ? track [5] : "",
+                                       i, track [6],
+                                       i, track [7],
+                                       i /* musicbrainz id skipped */);
+      g_strfreev (track);
+    }
+    buffer = g_strjoinv ("&", new_tracks);
+    g_strfreev (tracks);
+    g_strfreev (new_tracks);
+  }
+
+  if (buffer) {
+    post_data = g_strdup_printf ("s=%s&%s",
+                                 scrobbler->priv->session_id,
+                                 buffer);
+    g_free (buffer);
+    scrobbler_send_message (scrobbler, scrobbler->priv->sub_url,
+                            post_data, cached_scrobble_cb);
+  }
 }
 
 MafwLastfmTrack *
