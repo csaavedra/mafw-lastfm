@@ -1,7 +1,7 @@
 /**
  * mafw-lastfm: a last.fm scrobbler for mafw
  *
- * Copyright (C) 2009  Claudio Saavedra <csaavedra@igalia.com>
+ * Copyright (C) 2009-2010  Claudio Saavedra <csaavedra@igalia.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
