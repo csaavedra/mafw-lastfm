@@ -211,6 +211,7 @@ mafw_lastfm_scrobbler_rebuild_queue (MafwLastfmScrobbler *scrobbler)
 static void
 mafw_lastfm_scrobbler_scrobbling_failed (MafwLastfmScrobbler *scrobbler)
 {
+  mafw_lastfm_scrobbler_flush_to_disk (scrobbler);
   mafw_lastfm_scrobbler_rebuild_queue (scrobbler);
   mafw_lastfm_scrobbler_defer_handshake (scrobbler);
 }
@@ -343,18 +344,21 @@ scrobble_real (MafwLastfmScrobbler *scrobbler)
   GList *list = NULL;
   gint tracks = 0;
 
-  if (scrobbler->priv->status != MAFW_LASTFM_SCROBBLER_READY)
-    return;
+  gboolean scrobbler_ready = scrobbler->priv->status == MAFW_LASTFM_SCROBBLER_READY;
 
-  while (!g_queue_is_empty (scrobbler->priv->scrobbling_queue) && tracks < 50) {
+  while (!g_queue_is_empty (scrobbler->priv->scrobbling_queue) && (!scrobbler_ready || tracks < 50)) {
     track = g_queue_pop_head (scrobbler->priv->scrobbling_queue);
     list = g_list_append (list, track);
     tracks++;
   }
-
   if (list) {
     scrobbler->priv->scrobble_list = list;
-    mafw_lastfm_scrobbler_scrobble_list (scrobbler, list);
+    if (scrobbler_ready)
+      mafw_lastfm_scrobbler_scrobble_list (scrobbler, list);
+    else {
+      mafw_lastfm_scrobbler_flush_to_disk (scrobbler);
+      mafw_lastfm_scrobbler_rebuild_queue (scrobbler);
+    }
   }
 }
 
@@ -557,6 +561,7 @@ handshake_cb (SoupSession *session,
     case AS_RESPONSE_OK:
       scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_READY;
       scrobbler->priv->retry_interval = 5;
+      mafw_lastfm_scrobbler_scrobble_cached (scrobbler);
       return;
     case AS_RESPONSE_BADTIME:
       scrobbler->priv->status = MAFW_LASTFM_SCROBBLER_NEED_HANDSHAKE;
