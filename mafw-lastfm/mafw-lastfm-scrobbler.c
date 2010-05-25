@@ -189,6 +189,9 @@ mafw_lastfm_scrobbler_rebuild_queue (MafwLastfmScrobbler *scrobbler)
 {
   GList *iter;
 
+  if (scrobbler->priv->scrobble_list == NULL)
+    return;
+
   for (iter = g_list_last (scrobbler->priv->scrobble_list);
        iter; iter = iter->prev) {
     g_queue_push_head (scrobbler->priv->scrobbling_queue,
