@@ -27,6 +27,7 @@
 #include "mafw-lastfm-scrobbler.h"
 
 #define WANTED_RENDERER "Mafw-Gst-Renderer"
+#define MAFW_LASTFM_CREDENTIALS_FILE ".osso/mafw-lastfm"
 
 gint64 length;
 
@@ -139,8 +140,6 @@ renderer_added_cb (MafwRegistry *registry,
                     G_CALLBACK (metadata_changed_cb),
                     user_data);
 }
-
-#define MAFW_LASTFM_CREDENTIALS_FILE ".osso/mafw-lastfm"
 
 static gboolean
 get_credentials (gchar *file,
