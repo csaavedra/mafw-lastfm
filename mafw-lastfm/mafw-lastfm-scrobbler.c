@@ -295,6 +295,7 @@ mafw_lastfm_scrobbler_scrobble_list (MafwLastfmScrobbler *scrobbler,
     tmp = post_data;
     post_data = g_strconcat (tmp, track_data, NULL);
     g_free (tmp);
+    g_free (track_data);
   }
 
   scrobbler_send_message (scrobbler, scrobbler->priv->sub_url,
