@@ -78,14 +78,14 @@ on_dialog_response (GtkDialog *dialog,
 		    gpointer user_data)
 {
 	SettingsContext *ctx;
-	const gchar *username;
+	gchar *username;
 	const gchar *password;
 
 	ctx = (SettingsContext *) user_data;
 
 	if (response_id == GTK_RESPONSE_OK)
 	{
-		username = gtk_entry_get_text (ctx->username);
+		username = g_strstrip (g_strdup (gtk_entry_get_text (ctx->username)));
 		password = gtk_entry_get_text (ctx->password);
 
 		if (username[0] == '\0' || password[0] == '\0')
@@ -98,6 +98,7 @@ on_dialog_response (GtkDialog *dialog,
 		{
 			save_credentials (ctx->settings_file, username, password);
 		}
+		g_free (username);
 	}
 
 	gtk_widget_hide (GTK_WIDGET (dialog));
