@@ -272,17 +272,19 @@ static void
 mafw_lastfm_scrobbler_scrobble_list (MafwLastfmScrobbler *scrobbler,
                                      GList *list)
 {
-  gint i;
+  gint i, length;
   GList *iter;
   gchar *post_data;
-  gchar *track_data, *tmp;
+  gchar **postv;
   MafwLastfmTrack *track;
 
-  post_data = g_strdup_printf ("s=%s", scrobbler->priv->session_id);
+  length = g_list_length (list);
+  postv = g_new0 (gchar *, length + 2);
+  postv[0] = g_strdup_printf ("s=%s", scrobbler->priv->session_id);
 
   for (iter = list, i = 0; iter; iter = iter->next, i++) {
     track = (MafwLastfmTrack *) iter->data;
-    track_data = g_strdup_printf ("&a[%i]=%s&t[%i]=%s&i[%i]=%li&o[%i]=%c&r[%i]=&l[%i]=%lld&b[%i]=%s&n[%i]=%i&m[%i]=",
+    postv[i+1] = g_strdup_printf ("a[%i]=%s&t[%i]=%s&i[%i]=%li&o[%i]=%c&r[%i]=&l[%i]=%lld&b[%i]=%s&n[%i]=%i&m[%i]=",
                                   i, track->artist,
                                   i, track->title,
                                   i, track->timestamp,
@@ -292,12 +294,10 @@ mafw_lastfm_scrobbler_scrobble_list (MafwLastfmScrobbler *scrobbler,
                                   i, track->album ? track->album : "",
                                   i, track->number,
                                   i /* musicbrainz id skipped */);
-    tmp = post_data;
-    post_data = g_strconcat (tmp, track_data, NULL);
-    g_free (tmp);
-    g_free (track_data);
   }
 
+  post_data = g_strjoinv ("&", postv);
+  g_strfreev (postv);
   scrobbler_send_message (scrobbler, scrobbler->priv->sub_url,
                           post_data, scrobble_cb);
 }
@@ -631,14 +631,13 @@ mafw_lastfm_scrobbler_flush_to_disk (MafwLastfmScrobbler *scrobbler)
 {
   MafwLastfmTrack *track;
   GFileOutputStream *outstream;
-  gchar *track_data, *buffer, *tmp;
+  gchar *buffer, **tracks;
+  gint length, i;
   GList *iter;
   GError *error = NULL;
   gboolean success = TRUE;
   GFile *file;
   gchar *filename;
-
-  buffer = g_strdup ("");
 
   filename = g_build_filename (g_get_home_dir(),
 			       MAFW_LASTFM_QUEUE_FILE, NULL);
@@ -653,24 +652,27 @@ mafw_lastfm_scrobbler_flush_to_disk (MafwLastfmScrobbler *scrobbler)
     goto out;
   }
 
-  for (iter = scrobbler->priv->scrobble_list; iter; iter = g_list_next (iter)) {
+  length = g_list_length (scrobbler->priv->scrobble_list);
+  tracks = g_new0 (gchar *, length + 1);
+
+  for (iter = scrobbler->priv->scrobble_list, i = 0;
+       iter;
+       iter = g_list_next (iter), i++) {
     track = (MafwLastfmTrack *) iter->data;
-    track_data = g_strdup_printf ("%s&%s&%li&%c&%lld&%s&%i\n",
-                                  track->artist,
-                                  track->title,
-                                  track->timestamp,
-                                  track->source,
-                                  /* ratio skipped */
-                                  track->length,
-                                  track->album ? track->album : "",
-                                  track->number
-                                  /* musicbrainz id skipped */);
-    tmp = g_strconcat (buffer, track_data, NULL);
-    g_free (buffer);
-    g_free (track_data);
-    buffer = tmp;
+    tracks[i] = g_strdup_printf ("%s&%s&%li&%c&%lld&%s&%i\n",
+				 track->artist,
+				 track->title,
+				 track->timestamp,
+				 track->source,
+				 /* ratio skipped */
+				 track->length,
+				 track->album ? track->album : "",
+				 track->number
+				 /* musicbrainz id skipped */);
   }
 
+  buffer = g_strjoinv (NULL, tracks);
+  g_strfreev (tracks);
   g_output_stream_write (G_OUTPUT_STREAM (outstream), buffer, strlen (buffer), NULL, &error);
 
   if (error) {
