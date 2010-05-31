@@ -1,0 +1,42 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: mafw-lastfm\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-05-31 02:05+0300\n"
+"PO-Revision-Date: 2010-05-30 13:04+0200\n"
+"Last-Translator: Claudio Saavedra <csaavedra@igalia.com>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../control-panel/mafw-lastfm-cpa.c:96
+msgid "Enter both your username and password before saving."
+msgstr "Ingrese su nombre de usuario y su contraseña antes de guardar."
+
+#: ../control-panel/mafw-lastfm-cpa.c:128
+#: ../control-panel/mafw-lastfm.desktop.in.in.h:2
+msgid "Last.fm settings"
+msgstr "Configuración de Last.fm"
+
+#: ../control-panel/mafw-lastfm-cpa.c:131
+msgid "wdgt_bd_done"
+msgstr ""
+
+#: ../control-panel/mafw-lastfm-cpa.c:137
+msgid "Username:"
+msgstr "Nombre de usuario:"
+
+#: ../control-panel/mafw-lastfm-cpa.c:145
+msgid "Password:"
+msgstr "Contraseña:"
+
+#: ../control-panel/mafw-lastfm.desktop.in.in.h:1
+msgid "Configure your Last.fm account for scrobbling"
+msgstr "Configure su cuenta de Last.fm para enviar scrobbles"

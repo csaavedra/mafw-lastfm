@@ -22,7 +22,9 @@
 #include <hildon/hildon.h>
 #include <gtk/gtk.h>
 #include <glib.h>
-#include <libintl.h>
+#include <locale.h>
+#include <glib/gi18n.h>
+#include "config.h"
 
 #define MAFW_LASTFM_CREDENTIALS_FILE ".osso/mafw-lastfm"
 
@@ -91,8 +93,8 @@ on_dialog_response (GtkDialog *dialog,
 		if (username[0] == '\0' || password[0] == '\0')
 		{
 			hildon_banner_show_information (GTK_WIDGET (dialog), NULL,
-							"Enter both your username "
-							"and password before saving.");
+							_("Enter both your username "
+							  "and password before saving."));
 			return;
 		} else
 		{
@@ -120,17 +122,21 @@ execute(osso_context_t *osso, gpointer data, gboolean user_activated)
 	gchar *usr, *settings_file;
 	SettingsContext *ctx;
 
+	setlocale(LC_ALL, "");
+	textdomain(GETTEXT_PACKAGE);
+
 	settings_file = g_build_filename (g_get_home_dir (),
 					  MAFW_LASTFM_CREDENTIALS_FILE, NULL);
 
-	dialog = gtk_dialog_new_with_buttons ("Last.fm settings",
+	dialog = gtk_dialog_new_with_buttons (_("Last.fm settings"),
 					      GTK_WINDOW (data),
 					      GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR,
 					      dgettext ("hildon-libs", "wdgt_bd_done"),
 					      GTK_RESPONSE_OK,
 					      NULL);
+
 	vbox = gtk_vbox_new (TRUE, 0);
-	label_username = gtk_label_new ("Username:");
+	label_username = gtk_label_new (_("Username:"));
 	gtk_misc_set_alignment (GTK_MISC (label_username), 0.0, 0.5);
 	username = hildon_entry_new (HILDON_SIZE_AUTO | HILDON_SIZE_FINGER_HEIGHT);
 
@@ -138,7 +144,7 @@ execute(osso_context_t *osso, gpointer data, gboolean user_activated)
 	gtk_box_pack_start (GTK_BOX (hbox), label_username, TRUE, TRUE, 20);
 	gtk_box_pack_start (GTK_BOX (hbox), username, TRUE, TRUE, 0);
 
-	label_password = gtk_label_new ("Password:");
+	label_password = gtk_label_new (_("Password:"));
 	gtk_misc_set_alignment (GTK_MISC (label_password), 0.0, 0.5);
 	password = hildon_entry_new (HILDON_SIZE_AUTO | HILDON_SIZE_FINGER_HEIGHT);
 	hildon_gtk_entry_set_input_mode (GTK_ENTRY (password),

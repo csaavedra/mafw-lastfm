@@ -1,8 +1,8 @@
 [Desktop Entry]
 Encoding=UTF-8
 Version=1.0
-Name=Last.fm settings
-Comment=Configure your Last.fm account for scrobbling
+_Name=Last.fm settings
+_Comment=Configure your Last.fm account for scrobbling
 Type=HildonControlPanelPlugin
 Icon=as
 X-control-panel-plugin=libmafw-lastfm-cpa.so
