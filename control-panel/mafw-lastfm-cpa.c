@@ -131,6 +131,7 @@ execute(osso_context_t *osso, gpointer data, gboolean user_activated)
 	dialog = gtk_dialog_new_with_buttons (_("Last.fm settings"),
 					      GTK_WINDOW (data),
 					      GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR,
+					      /* NB! Leave untranslated. */
 					      dgettext ("hildon-libs", "wdgt_bd_done"),
 					      GTK_RESPONSE_OK,
 					      NULL);

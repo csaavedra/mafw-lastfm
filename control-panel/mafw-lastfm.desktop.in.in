@@ -1,7 +1,7 @@
 [Desktop Entry]
 Encoding=UTF-8
 Version=1.0
-_Name=Last.fm settings
+_Name=Last.fm scrobbler
 _Comment=Configure your Last.fm account for scrobbling
 Type=HildonControlPanelPlugin
 Icon=as
