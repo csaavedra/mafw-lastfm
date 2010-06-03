@@ -2,3 +2,4 @@ debian/tmp/usr/bin/mafw-lastfm
 debian/tmp/usr/lib/hildon-control-panel/libmafw-lastfm-cpa.so
 debian/tmp/usr/share/applications/hildon-control-panel/mafw-lastfm.desktop
 debian/tmp/usr/share/icons
+debian/tmp/usr/share/locale

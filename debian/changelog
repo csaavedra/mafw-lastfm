@@ -1,3 +1,14 @@
+mafw-lastfm (0.0.7-1) unstable; urgency=low
+
+  * New upstream release.
+    - on-disk caching
+    - localization support and new translations.
+    - memory leaks fixed.
+  * Distribute locale files.
+  * Add build-dependence on intltool (0.35.0)
+
+ -- Claudio Saavedra <csaavedra@igalia.com>  Thu, 03 Jun 2010 07:30:06 +0300
+
 mafw-lastfm (0.0.6-1) unstable; urgency=low
 
   * New upstream release.
