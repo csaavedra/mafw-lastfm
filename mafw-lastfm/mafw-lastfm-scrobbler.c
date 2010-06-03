@@ -631,7 +631,7 @@ mafw_lastfm_scrobbler_flush_to_disk (MafwLastfmScrobbler *scrobbler)
 {
   MafwLastfmTrack *track;
   GFileOutputStream *outstream;
-  gchar *buffer, **tracks;
+  gchar *buffer = NULL, **tracks;
   gint length, i;
   GList *iter;
   GError *error = NULL;
