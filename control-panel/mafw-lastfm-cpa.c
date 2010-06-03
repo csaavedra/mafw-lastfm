@@ -1,8 +1,30 @@
+/**
+ * mafw-lastfm: a last.fm scrobbler for mafw
+ *
+ * Copyright (C) 2009-2010  Claudio Saavedra <csaavedra@igalia.com>
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ */
+
 #include <hildon-cp-plugin/hildon-cp-plugin-interface.h>
 #include <hildon/hildon.h>
 #include <gtk/gtk.h>
 #include <glib.h>
-#include <libintl.h>
+#include <locale.h>
+#include <glib/gi18n.h>
+#include "config.h"
 
 #define MAFW_LASTFM_CREDENTIALS_FILE ".osso/mafw-lastfm"
 
@@ -58,26 +80,27 @@ on_dialog_response (GtkDialog *dialog,
 		    gpointer user_data)
 {
 	SettingsContext *ctx;
-	const gchar *username;
+	gchar *username;
 	const gchar *password;
 
 	ctx = (SettingsContext *) user_data;
 
 	if (response_id == GTK_RESPONSE_OK)
 	{
-		username = gtk_entry_get_text (ctx->username);
+		username = g_strstrip (g_strdup (gtk_entry_get_text (ctx->username)));
 		password = gtk_entry_get_text (ctx->password);
 
 		if (username[0] == '\0' || password[0] == '\0')
 		{
 			hildon_banner_show_information (GTK_WIDGET (dialog), NULL,
-							"Enter both your username "
-							"and password before saving.");
+							_("Enter both your username "
+							  "and password before saving."));
 			return;
 		} else
 		{
 			save_credentials (ctx->settings_file, username, password);
 		}
+		g_free (username);
 	}
 
 	gtk_widget_hide (GTK_WIDGET (dialog));
@@ -93,41 +116,42 @@ execute(osso_context_t *osso, gpointer data, gboolean user_activated)
 	GtkWidget *dialog;
 	GtkWidget *username;
 	GtkWidget *password;
-	GtkWidget *vbox, *hbox;
+	GtkWidget *table;
 	GtkWidget *label_username;
 	GtkWidget *label_password;
 	gchar *usr, *settings_file;
 	SettingsContext *ctx;
 
+	setlocale(LC_ALL, "");
+	textdomain(GETTEXT_PACKAGE);
+
 	settings_file = g_build_filename (g_get_home_dir (),
 					  MAFW_LASTFM_CREDENTIALS_FILE, NULL);
 
-	dialog = gtk_dialog_new_with_buttons ("Last.fm settings",
+	dialog = gtk_dialog_new_with_buttons (_("Last.fm settings"),
 					      GTK_WINDOW (data),
 					      GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR,
+					      /* NB! Leave untranslated. */
 					      dgettext ("hildon-libs", "wdgt_bd_done"),
 					      GTK_RESPONSE_OK,
 					      NULL);
-	vbox = gtk_vbox_new (TRUE, 0);
-	label_username = gtk_label_new ("Username:");
+
+	table = gtk_table_new (2, 2, TRUE);
+	label_username = gtk_label_new (_("Username:"));
 	gtk_misc_set_alignment (GTK_MISC (label_username), 0.0, 0.5);
 	username = hildon_entry_new (HILDON_SIZE_AUTO | HILDON_SIZE_FINGER_HEIGHT);
 
-	hbox = gtk_hbox_new (FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (hbox), label_username, TRUE, TRUE, 20);
-	gtk_box_pack_start (GTK_BOX (hbox), username, TRUE, TRUE, 0);
+	gtk_table_attach_defaults (GTK_TABLE (table), label_username, 0, 1, 0, 1);
 
-	label_password = gtk_label_new ("Password:");
+	gtk_table_attach_defaults (GTK_TABLE (table), username, 1, 2, 0, 1);
+	label_password = gtk_label_new (_("Password:"));
 	gtk_misc_set_alignment (GTK_MISC (label_password), 0.0, 0.5);
 	password = hildon_entry_new (HILDON_SIZE_AUTO | HILDON_SIZE_FINGER_HEIGHT);
 	hildon_gtk_entry_set_input_mode (GTK_ENTRY (password),
 					 HILDON_GTK_INPUT_MODE_FULL |
 					 HILDON_GTK_INPUT_MODE_INVISIBLE);
-	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
-
-	hbox = gtk_hbox_new (FALSE, 0);
-	gtk_box_pack_start (GTK_BOX (hbox), label_password, TRUE, TRUE, 20);
-	gtk_box_pack_start (GTK_BOX (hbox), password, TRUE, TRUE, 0);
+	gtk_table_attach_defaults (GTK_TABLE (table), label_password, 0, 1, 1, 2);
+	gtk_table_attach_defaults (GTK_TABLE (table), password, 1, 2, 1, 2);
 
 	if (g_file_test (settings_file, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_REGULAR))
 	{
@@ -137,11 +161,9 @@ execute(osso_context_t *osso, gpointer data, gboolean user_activated)
 		g_free (usr);
 	}
 
-	gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 0);
-
 	gtk_container_add (GTK_CONTAINER
 			   (gtk_dialog_get_content_area (GTK_DIALOG (dialog))),
-			   vbox);
+			   table);
 
 	ctx = g_new0 (SettingsContext, 1);
 

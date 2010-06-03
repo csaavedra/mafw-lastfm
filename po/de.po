@@ -1,0 +1,46 @@
+# mafw-lastfm German translation
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# Andre Klapper <ak-47@gmx.net>, 2010.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-06-01 18:46+0300\n"
+"PO-Revision-Date: 2010-06-01 09:00+0200\n"
+"Last-Translator: Andre Klapper <ak-47@gmx.net>\n"
+"Language-Team: German <de@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../control-panel/mafw-lastfm-cpa.c:96
+msgid "Enter both your username and password before saving."
+msgstr "Geben Sie Ihren Benutzernamen und Ihr Passwort ein bevor Sie speichern."
+
+#: ../control-panel/mafw-lastfm-cpa.c:131
+msgid "Last.fm settings"
+msgstr "Last.fm-Einstellungen"
+
+#. NB! Leave untranslated.
+#: ../control-panel/mafw-lastfm-cpa.c:135
+msgid "wdgt_bd_done"
+msgstr ""
+
+#: ../control-panel/mafw-lastfm-cpa.c:140
+msgid "Username:"
+msgstr "Benutzername:"
+
+#: ../control-panel/mafw-lastfm-cpa.c:147
+msgid "Password:"
+msgstr "Passwort:"
+
+#: ../control-panel/mafw-lastfm.desktop.in.in.h:1
+msgid "Configure your Last.fm account for scrobbling"
+msgstr "Richten Sie Ihr Last.fm-Konto für Scrobbling ein"
+
+#: ../control-panel/mafw-lastfm.desktop.in.in.h:2
+msgid "Last.fm scrobbler"
+msgstr "Last.fm-Scrobbler"

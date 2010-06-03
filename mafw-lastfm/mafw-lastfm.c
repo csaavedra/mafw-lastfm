@@ -1,7 +1,7 @@
 /**
  * mafw-lastfm: a last.fm scrobbler for mafw
  *
- * Copyright (C) 2009  Claudio Saavedra <csaavedra@igalia.com>
+ * Copyright (C) 2009-2010  Claudio Saavedra <csaavedra@igalia.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include "mafw-lastfm-scrobbler.h"
 
 #define WANTED_RENDERER "Mafw-Gst-Renderer"
+#define MAFW_LASTFM_CREDENTIALS_FILE ".osso/mafw-lastfm"
 
 gint64 length;
 
@@ -139,8 +140,6 @@ renderer_added_cb (MafwRegistry *registry,
                     G_CALLBACK (metadata_changed_cb),
                     user_data);
 }
-
-#define MAFW_LASTFM_CREDENTIALS_FILE ".osso/mafw-lastfm"
 
 static gboolean
 get_credentials (gchar *file,

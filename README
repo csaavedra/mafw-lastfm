@@ -66,9 +66,8 @@ limitations
 
 mafw-lastfm is in an early stage and has plenty of limitations:
 
-- Songs are not serialized, so you'll loose the tracks you've listened if you restart
-  the daemon.
 - The daemon won't work properly behind a proxy.
+- Libre.fm is not yet supported.
 
 These features will come with time.
 
