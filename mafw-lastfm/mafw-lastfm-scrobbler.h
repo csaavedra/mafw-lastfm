@@ -79,11 +79,11 @@ mafw_lastfm_scrobbler_handshake (MafwLastfmScrobbler *scrobbler);
 
 void
 mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
-				       MafwLastfmTrack *track);
+                                       MafwLastfmTrack *track);
 
 void
 mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
-					MafwLastfmTrack *track);
+                                        MafwLastfmTrack *track);
 
 void
 mafw_lastfm_scrobbler_flush_queue (MafwLastfmScrobbler *scrobbler);

@@ -640,7 +640,7 @@ mafw_lastfm_scrobbler_flush_to_disk (MafwLastfmScrobbler *scrobbler)
   gchar *filename;
 
   filename = g_build_filename (g_get_home_dir(),
-			       MAFW_LASTFM_QUEUE_FILE, NULL);
+                               MAFW_LASTFM_QUEUE_FILE, NULL);
   file = g_file_new_for_path (filename);
   g_free (filename);
 
@@ -660,15 +660,15 @@ mafw_lastfm_scrobbler_flush_to_disk (MafwLastfmScrobbler *scrobbler)
        iter = g_list_next (iter), i++) {
     track = (MafwLastfmTrack *) iter->data;
     tracks[i] = g_strdup_printf ("%s&%s&%li&%c&%lld&%s&%i\n",
-				 track->artist,
-				 track->title,
-				 track->timestamp,
-				 track->source,
-				 /* ratio skipped */
-				 track->length,
-				 track->album ? track->album : "",
-				 track->number
-				 /* musicbrainz id skipped */);
+                                 track->artist,
+                                 track->title,
+                                 track->timestamp,
+                                 track->source,
+                                 /* ratio skipped */
+                                 track->length,
+                                 track->album ? track->album : "",
+                                 track->number
+                                 /* musicbrainz id skipped */);
   }
 
   buffer = g_strjoinv (NULL, tracks);
@@ -701,8 +701,8 @@ out:
 
 static void
 cached_scrobble_cb (SoupSession *session,
-		    SoupMessage *message,
-		    gpointer user_data)
+                    SoupMessage *message,
+                    gpointer user_data)
 {
   GFile *file;
   gchar *filename;
@@ -730,7 +730,7 @@ mafw_lastfm_scrobbler_scrobble_cached (MafwLastfmScrobbler *scrobbler)
   gint i, n;
 
   filename = g_build_filename (g_get_home_dir(),
-			       MAFW_LASTFM_QUEUE_FILE, NULL);
+                               MAFW_LASTFM_QUEUE_FILE, NULL);
 
   if (g_file_get_contents (filename, &buffer, NULL, NULL) && buffer) {
     tracks = g_strsplit (buffer, "\n", 0);
