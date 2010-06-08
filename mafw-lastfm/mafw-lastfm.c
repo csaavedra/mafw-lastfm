@@ -30,6 +30,7 @@
 #define MAFW_LASTFM_CREDENTIALS_FILE ".osso/mafw-lastfm"
 
 gint64 length;
+glong current_time;
 
 static gchar *
 mafw_metadata_lookup_string (GHashTable *table,
@@ -58,9 +59,6 @@ metadata_callback (MafwRenderer *self,
 {
   MafwLastfmScrobbler *scrobbler;
   MafwLastfmTrack *track;
-  GTimeVal time_val;
-
-  g_get_current_time (&time_val);
 
   scrobbler = MAFW_LASTFM_SCROBBLER (user_data);
 
@@ -72,8 +70,7 @@ metadata_callback (MafwRenderer *self,
   if (!track->artist || !track->title)
     return;
 
-  track->timestamp = time_val.tv_sec; /* This should probably be obtained in the
-                                         state changed cb */
+  track->timestamp = current_time;
   track->source = 'P';
   track->album = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_ALBUM);
   track->number = mafw_metadata_lookup_int (metadata, MAFW_METADATA_KEY_TRACK);
@@ -89,8 +86,11 @@ state_changed_cb (MafwRenderer *renderer,
                   MafwPlayState state,
                   gpointer user_data)
 {
+  GTimeVal time_val;
   switch (state) {
   case Playing:
+    g_get_current_time (&time_val);
+    current_time = time_val.tv_sec;
     mafw_renderer_get_current_metadata (renderer,
                                         metadata_callback,
                                         user_data);
