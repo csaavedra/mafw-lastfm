@@ -441,8 +441,8 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
   }
 
   if (scrobbler->priv->suspended_track) {
-    if (mafw_lastfm_track_cmp (scrobbler->priv->suspended_track,
-                               encoded)) {
+    if (mafw_lastfm_track_cmp (scrobbler->priv->suspended_track, encoded) &&
+        position > 0) {
       mafw_lastfm_track_free (encoded);
       encoded = scrobbler->priv->suspended_track;
     } else {
