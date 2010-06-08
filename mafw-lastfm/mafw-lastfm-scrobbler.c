@@ -49,11 +49,11 @@ struct MafwLastfmScrobblerPrivate {
   guint handshake_id;
   guint retry_id;
   guint playing_now_id;
+  guint cache_id;
   MafwLastfmTrack *playing_now_track;
 
   guint retry_interval;
   SoupMessage *retry_message;
-  GList *scrobble_list;
 
   MafwLastfmScrobblerStatus status;
 
@@ -74,6 +74,8 @@ static void
 mafw_lastfm_scrobbler_flush_to_disk (MafwLastfmScrobbler *scrobbler);
 static void
 mafw_lastfm_scrobbler_scrobble_cached (MafwLastfmScrobbler *scrobbler);
+static void
+mafw_lastfm_scrobbler_drop_pending_track (MafwLastfmScrobbler *scrobbler);
 
 static void handshake_cb (SoupSession *session,
                           SoupMessage *message,
@@ -100,6 +102,8 @@ mafw_lastfm_scrobbler_finalize (GObject *object)
 
   if (priv->playing_now_id)
     g_source_remove (priv->playing_now_id);
+  if (priv->cache_id)
+    g_source_remove (priv->cache_id);
 
   if (priv->playing_now_track)
     mafw_lastfm_track_free (priv->playing_now_track);
@@ -135,11 +139,12 @@ mafw_lastfm_scrobbler_init (MafwLastfmScrobbler *scrobbler)
 
   priv->retry_message = NULL;
   priv->retry_interval = 5;
-  priv->scrobble_list = NULL;
   priv->suspended_track = NULL;
 
   priv->playing_now_track = NULL;
   priv->playing_now_id = 0;
+
+  priv->cache_id = 0;
 
   priv->username = NULL;
   priv->md5password = NULL;
@@ -191,58 +196,6 @@ mafw_lastfm_scrobbler_defer_handshake (MafwLastfmScrobbler *scrobbler)
 }
 
 static void
-mafw_lastfm_scrobbler_rebuild_queue (MafwLastfmScrobbler *scrobbler)
-{
-  GList *iter;
-
-  if (scrobbler->priv->scrobble_list == NULL)
-    return;
-
-  for (iter = g_list_last (scrobbler->priv->scrobble_list);
-       iter; iter = iter->prev) {
-    g_queue_push_head (scrobbler->priv->scrobbling_queue,
-                       iter->data);
-  }
-
-  g_list_free (scrobbler->priv->scrobble_list);
-  scrobbler->priv->scrobble_list = NULL;
-}
-
-static void
-mafw_lastfm_scrobbler_scrobbling_failed (MafwLastfmScrobbler *scrobbler)
-{
-  mafw_lastfm_scrobbler_flush_to_disk (scrobbler);
-  mafw_lastfm_scrobbler_rebuild_queue (scrobbler);
-  mafw_lastfm_scrobbler_defer_handshake (scrobbler);
-}
-
-static void
-mafw_lastfm_scrobbler_clean_scrobble_list (MafwLastfmScrobbler *scrobbler)
-{
-  g_list_foreach (scrobbler->priv->scrobble_list, (GFunc)mafw_lastfm_track_free, NULL);
-  g_list_free (scrobbler->priv->scrobble_list);
-  scrobbler->priv->scrobble_list = NULL;
-}
-
-static void
-scrobble_cb (SoupSession *session,
-             SoupMessage *message,
-             gpointer user_data)
-{
-  MafwLastfmScrobbler *scrobbler = MAFW_LASTFM_SCROBBLER (user_data);
-
-  if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
-    g_print ("Scrobble: %s", message->response_body->data);
-    if (g_str_has_prefix (message->response_body->data, "OK")) {
-      mafw_lastfm_scrobbler_clean_scrobble_list (scrobbler);
-    } else
-      mafw_lastfm_scrobbler_scrobbling_failed (scrobbler);
-  } else {
-    mafw_lastfm_scrobbler_scrobbling_failed (scrobbler);
-  }
-}
-
-static void
 scrobbler_send_message (MafwLastfmScrobbler *scrobbler,
                          const char *url,
                          const char *body,
@@ -259,47 +212,6 @@ scrobbler_send_message (MafwLastfmScrobbler *scrobbler,
                               message,
                               callback,
                               scrobbler);
-}
-
-/**
- * mafw_lastfm_scrobbler_scrobble_list:
- * @scrobbler: a scrobbler
- * @list: a %NULL-terminated list of %MafwLastfmTrack elements
- *
- * Submits a series of tracks from the list.
- **/
-static void
-mafw_lastfm_scrobbler_scrobble_list (MafwLastfmScrobbler *scrobbler,
-                                     GList *list)
-{
-  gint i, length;
-  GList *iter;
-  gchar *post_data;
-  gchar **postv;
-  MafwLastfmTrack *track;
-
-  length = g_list_length (list);
-  postv = g_new0 (gchar *, length + 2);
-  postv[0] = g_strdup_printf ("s=%s", scrobbler->priv->session_id);
-
-  for (iter = list, i = 0; iter; iter = iter->next, i++) {
-    track = (MafwLastfmTrack *) iter->data;
-    postv[i+1] = g_strdup_printf ("a[%i]=%s&t[%i]=%s&i[%i]=%li&o[%i]=%c&r[%i]=&l[%i]=%lld&b[%i]=%s&n[%i]=%i&m[%i]=",
-                                  i, track->artist,
-                                  i, track->title,
-                                  i, track->timestamp,
-                                  i, track->source,
-                                  i, /* ratio skipped */
-                                  i, track->length,
-                                  i, track->album ? track->album : "",
-                                  i, track->number,
-                                  i /* musicbrainz id skipped */);
-  }
-
-  post_data = g_strjoinv ("&", postv);
-  g_strfreev (postv);
-  scrobbler_send_message (scrobbler, scrobbler->priv->sub_url,
-                          post_data, scrobble_cb);
 }
 
 static void
@@ -338,45 +250,6 @@ mafw_lastfm_scrobbler_set_playing_now (MafwLastfmScrobbler *scrobbler,
                           post_data, set_playing_now_cb);
 }
 
-static void
-scrobble_real (MafwLastfmScrobbler *scrobbler)
-{
-  MafwLastfmTrack *track;
-  GList *list = NULL;
-  gint tracks = 0;
-
-  gboolean scrobbler_ready = scrobbler->priv->status == MAFW_LASTFM_SCROBBLER_READY;
-
-  while (!g_queue_is_empty (scrobbler->priv->scrobbling_queue) && (!scrobbler_ready || tracks < 50)) {
-    track = g_queue_pop_head (scrobbler->priv->scrobbling_queue);
-    list = g_list_append (list, track);
-    tracks++;
-  }
-  if (list) {
-    scrobbler->priv->scrobble_list = list;
-    if (scrobbler_ready)
-      mafw_lastfm_scrobbler_scrobble_list (scrobbler, list);
-    else {
-      mafw_lastfm_scrobbler_flush_to_disk (scrobbler);
-      mafw_lastfm_scrobbler_rebuild_queue (scrobbler);
-    }
-  }
-}
-
-static void
-clean_queue (MafwLastfmScrobbler *scrobbler)
-{
-  glong timestamp = time (NULL);
-  MafwLastfmTrack *track;
-
-  track = (MafwLastfmTrack *) g_queue_peek_tail (scrobbler->priv->scrobbling_queue);
-
-  if (timestamp - track->timestamp < MIN (240, track->length/2)) {
-    g_queue_pop_tail (scrobbler->priv->scrobbling_queue);
-    mafw_lastfm_track_free (track);
-  }
-}
-
 /**
  * mafw_lastfm_scrobbler_flush_queue:
  * @scrobbler: a #MafwLastfmScrobbler
@@ -388,10 +261,12 @@ clean_queue (MafwLastfmScrobbler *scrobbler)
 void
 mafw_lastfm_scrobbler_flush_queue (MafwLastfmScrobbler *scrobbler)
 {
-  if (!g_queue_is_empty (scrobbler->priv->scrobbling_queue)) {
-    clean_queue (scrobbler);
-    scrobble_real (scrobbler);
+  if (scrobbler->priv->suspended_track) {
+    mafw_lastfm_track_free (scrobbler->priv->suspended_track);
+    scrobbler->priv->suspended_track = NULL;
   }
+  mafw_lastfm_scrobbler_drop_pending_track (scrobbler);
+  mafw_lastfm_scrobbler_scrobble_cached (scrobbler);
 }
 
 void
@@ -403,6 +278,11 @@ mafw_lastfm_scrobbler_suspend (MafwLastfmScrobbler *scrobbler)
 
   /* Remove the last track from the queue, since it is suspended. */
   scrobbler->priv->suspended_track = g_queue_pop_tail (scrobbler->priv->scrobbling_queue);
+  /* Nothing to cache */
+  if (scrobbler->priv->cache_id) {
+    g_source_remove (scrobbler->priv->cache_id);
+    scrobbler->priv->cache_id = 0;
+  }
 }
 
 static gboolean
@@ -417,14 +297,37 @@ defer_set_playing_now_cb (MafwLastfmScrobbler *scrobbler)
   return FALSE;
 }
 
+static gboolean
+cache_scrobble_queue (MafwLastfmScrobbler *scrobbler)
+{
+  scrobbler->priv->cache_id = 0;
+
+  mafw_lastfm_scrobbler_flush_to_disk (scrobbler);
+
+  return FALSE;
+}
+
+static void
+mafw_lastfm_scrobbler_drop_pending_track (MafwLastfmScrobbler *scrobbler)
+{
+  /* If this is != 0, there is a track awaiting to be cached but it shouldn't.
+     Drop it. */
+  if (scrobbler->priv->cache_id) {
+    g_source_remove (scrobbler->priv->cache_id);
+    scrobbler->priv->cache_id = 0;
+    mafw_lastfm_track_free ((MafwLastfmTrack *)g_queue_pop_tail (scrobbler->priv->scrobbling_queue));
+  }
+}
+
 void
 mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
                                         MafwLastfmTrack *track,
                                         gint position)
 {
   MafwLastfmTrack *encoded;
+  gint t;
 
-  mafw_lastfm_scrobbler_flush_queue (scrobbler);
+  mafw_lastfm_scrobbler_scrobble_cached (scrobbler);
 
   encoded = mafw_lastfm_track_encode (track);
 
@@ -440,6 +343,8 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
                                                              scrobbler);
   }
 
+  mafw_lastfm_scrobbler_drop_pending_track (scrobbler);
+
   if (scrobbler->priv->suspended_track) {
     if (mafw_lastfm_track_cmp (scrobbler->priv->suspended_track, encoded) &&
         position > 0) {
@@ -450,7 +355,14 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
     }
     scrobbler->priv->suspended_track = NULL;
   }
-  g_queue_push_tail (scrobbler->priv->scrobbling_queue, encoded);
+
+  /* calculate how much to play before it should be considered worth scrobbling. */
+  t = MIN (240, encoded->length/2) - position;
+  if (t >= 0) {
+    /* Track has not been played enough (or at all) and should be cached once it has. */
+    g_queue_push_tail (scrobbler->priv->scrobbling_queue, encoded);
+    scrobbler->priv->cache_id = g_timeout_add_seconds (t, (GSourceFunc)cache_scrobble_queue, scrobbler);
+  }
 }
 
 /**
@@ -653,12 +565,12 @@ mafw_lastfm_scrobbler_flush_to_disk (MafwLastfmScrobbler *scrobbler)
     goto out;
   }
 
-  length = g_list_length (scrobbler->priv->scrobble_list);
+  length = g_queue_get_length (scrobbler->priv->scrobbling_queue);
   tracks = g_new0 (gchar *, length + 1);
 
-  for (iter = scrobbler->priv->scrobble_list, i = 0;
-       iter;
-       iter = g_list_next (iter), i++) {
+  for (i = 0, iter = scrobbler->priv->scrobbling_queue->head;
+       iter != NULL;
+       i++, iter = g_list_next (iter)) {
     track = (MafwLastfmTrack *) iter->data;
     tracks[i] = g_strdup_printf ("%s&%s&%li&%c&%lld&%s&%i\n",
                                  track->artist,
@@ -691,7 +603,8 @@ mafw_lastfm_scrobbler_flush_to_disk (MafwLastfmScrobbler *scrobbler)
   }
 
   if (success) {
-    mafw_lastfm_scrobbler_clean_scrobble_list (scrobbler);
+    g_queue_foreach (scrobbler->priv->scrobbling_queue, (GFunc)mafw_lastfm_track_free, NULL);
+    g_queue_clear (scrobbler->priv->scrobbling_queue);
   }
 
 out:
@@ -709,14 +622,18 @@ cached_scrobble_cb (SoupSession *session,
   gchar *filename;
 
   if (SOUP_STATUS_IS_SUCCESSFUL (message->status_code)) {
+    g_print ("Scrobble: %s", message->response_body->data);
     if (g_str_has_prefix (message->response_body->data, "OK")) {
       filename = g_build_filename (g_get_home_dir (), MAFW_LASTFM_QUEUE_FILE, NULL);
       file = g_file_new_for_path (filename);
       g_file_delete (file, NULL, NULL);
       g_object_unref (file);
       g_free (filename);
+      return;
     }
   }
+  /* If we are here, we failed to submit. */
+  mafw_lastfm_scrobbler_defer_handshake (MAFW_LASTFM_SCROBBLER  (user_data));
 }
 
 static void
