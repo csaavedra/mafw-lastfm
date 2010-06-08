@@ -419,7 +419,8 @@ defer_set_playing_now_cb (MafwLastfmScrobbler *scrobbler)
 
 void
 mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
-                                        MafwLastfmTrack *track)
+                                        MafwLastfmTrack *track,
+                                        gint position)
 {
   MafwLastfmTrack *encoded;
 
