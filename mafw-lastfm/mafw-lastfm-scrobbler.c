@@ -560,7 +560,7 @@ mafw_lastfm_scrobbler_flush_to_disk (MafwLastfmScrobbler *scrobbler)
   outstream = g_file_append_to (file, G_FILE_CREATE_PRIVATE, NULL, &error);
 
   if (error) {
-    g_print ("Couldn't open output file: %s\n", error->message);
+    g_warning ("Couldn't open output file: %s\n", error->message);
     g_error_free (error);
     goto out;
   }
@@ -589,7 +589,7 @@ mafw_lastfm_scrobbler_flush_to_disk (MafwLastfmScrobbler *scrobbler)
   g_output_stream_write (G_OUTPUT_STREAM (outstream), buffer, strlen (buffer), NULL, &error);
 
   if (error) {
-    g_print ("Error appending tracks: %s\n", error->message);
+    g_warning ("Error appending tracks: %s\n", error->message);
     g_error_free (error);
     success = FALSE;
     error = NULL;
@@ -597,7 +597,7 @@ mafw_lastfm_scrobbler_flush_to_disk (MafwLastfmScrobbler *scrobbler)
 
   g_output_stream_close (G_OUTPUT_STREAM (outstream), NULL, &error);
   if (error) {
-    g_print ("Error closing file: %s\n", error->message);
+    g_warning ("Error closing file: %s\n", error->message);
     success = FALSE;
     g_error_free (error);
   }
