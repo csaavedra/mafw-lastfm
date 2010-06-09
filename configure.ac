@@ -13,6 +13,14 @@ GETTEXT_PACKAGE=AC_PACKAGE_NAME
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Gettext package.])
 
+AC_ARG_ENABLE(debug,
+              AS_HELP_STRING([--enable-debug],
+                             [turn on debugging (default is no)]),,
+              enable_debug=no)
+if test "x$enable_debug" = "xyes"; then
+   CFLAGS="$CFLAGS -DMAFW_LASTFM_ENABLE_DEBUG"
+fi
+
 AC_PROG_CC
 AM_PROG_CC_C_O
 

@@ -63,6 +63,11 @@ struct MafwLastfmScrobblerPrivate {
   MafwLastfmTrack *suspended_track;
 };
 
+#ifndef MAFW_LASTFM_ENABLE_DEBUG
+ #undef g_print
+ #define g_print(...)
+#endif
+
 static MafwLastfmTrack *
 mafw_lastfm_track_encode (MafwLastfmTrack *track);
 static gboolean mafw_lastfm_track_cmp (MafwLastfmTrack *a,
