@@ -617,6 +617,7 @@ mafw_lastfm_scrobbler_flush_to_disk (MafwLastfmScrobbler *scrobbler)
   }
 
   if (success) {
+    g_print ("Cached %i track(s) on disk\n", length);
     g_queue_foreach (scrobbler->priv->scrobbling_queue, (GFunc)mafw_lastfm_track_free, NULL);
     g_queue_clear (scrobbler->priv->scrobbling_queue);
   }
