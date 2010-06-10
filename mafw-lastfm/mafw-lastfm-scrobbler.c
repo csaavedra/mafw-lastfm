@@ -340,16 +340,13 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
 
   encoded = mafw_lastfm_track_encode (track);
 
-  if (scrobbler->priv->status == MAFW_LASTFM_SCROBBLER_READY) {
-    if (scrobbler->priv->playing_now_id)
-      g_source_remove (scrobbler->priv->playing_now_id);
-    if (scrobbler->priv->playing_now_track)
-      mafw_lastfm_track_free (scrobbler->priv->playing_now_track);
-
-    scrobbler->priv->playing_now_track = mafw_lastfm_track_dup (encoded);
-    scrobbler->priv->playing_now_id = g_timeout_add_seconds (3,
-                                                             (GSourceFunc) defer_set_playing_now_cb,
-                                                             scrobbler);
+  if (scrobbler->priv->playing_now_id) {
+    g_source_remove (scrobbler->priv->playing_now_id);
+    scrobbler->priv->playing_now_id = 0;
+  }
+  if (scrobbler->priv->playing_now_track) {
+    mafw_lastfm_track_free (scrobbler->priv->playing_now_track);
+    scrobbler->priv->playing_now_track = 0;
   }
 
   mafw_lastfm_scrobbler_drop_pending_track (scrobbler);
@@ -368,7 +365,15 @@ mafw_lastfm_scrobbler_enqueue_scrobble (MafwLastfmScrobbler *scrobbler,
   /* calculate how much to play before it should be considered worth scrobbling. */
   t = MIN (240, encoded->length/2) - position;
   if (t >= 0) {
-    /* Track has not been played enough (or at all) and should be cached once it has. */
+    /* Track has not been played enough (or at all). */
+    if (scrobbler->priv->status == MAFW_LASTFM_SCROBBLER_READY) {
+      /* Set its playing now status. */
+      scrobbler->priv->playing_now_track = mafw_lastfm_track_dup (encoded);
+      scrobbler->priv->playing_now_id = g_timeout_add_seconds (3,
+                                                               (GSourceFunc) defer_set_playing_now_cb,
+                                                               scrobbler);
+    }
+    /* Schedule its caching once it has played enough. */
     g_queue_push_tail (scrobbler->priv->scrobbling_queue, encoded);
     scrobbler->priv->cache_id = g_timeout_add_seconds (t, (GSourceFunc)cache_scrobble_queue, scrobbler);
   }
