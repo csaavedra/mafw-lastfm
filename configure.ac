@@ -1,4 +1,4 @@
-AC_INIT([mafw-lastfm], [0.0.7], [https://bugs.maemo.org/enter_bug.cgi?product=mafw-lastfm])
+AC_INIT([mafw-lastfm], [0.0.8], [https://bugs.maemo.org/enter_bug.cgi?product=mafw-lastfm])
 AM_INIT_AUTOMAKE
 
 AM_MAINTAINER_MODE
