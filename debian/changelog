@@ -1,3 +1,9 @@
+mafw-lastfm (0.0.8-1) unstable; urgency=low
+
+   * Build debug packages with --enable-debug.
+
+ -- Claudio Saavedra <csaavedra@igalia.com>  Thu, 10 Jun 2010 11:55:51 +0300
+
 mafw-lastfm (0.0.7-1) unstable; urgency=low
 
   * New upstream release.

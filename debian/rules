@@ -7,6 +7,8 @@ config.status: $(DEB_SRCDIR)/configure
 
 ifeq (,$(findstring debug,$(DEB_BUILD_OPTIONS)))
     CFLAGS += -DG_DISABLE_CAST_CHECKS
+else
+    DEB_CONFIGURE_EXTRA_FLAGS = --enable-debug
 endif
 
 $(DEB_SRCDIR)/configure:
