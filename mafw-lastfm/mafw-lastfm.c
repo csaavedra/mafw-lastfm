@@ -30,6 +30,8 @@
 #define MAFW_LASTFM_CREDENTIALS_FILE ".osso/mafw-lastfm"
 
 gint64 length;
+glong current_time;
+gint position;
 
 static gchar *
 mafw_metadata_lookup_string (GHashTable *table,
@@ -58,9 +60,6 @@ metadata_callback (MafwRenderer *self,
 {
   MafwLastfmScrobbler *scrobbler;
   MafwLastfmTrack *track;
-  GTimeVal time_val;
-
-  g_get_current_time (&time_val);
 
   scrobbler = MAFW_LASTFM_SCROBBLER (user_data);
 
@@ -72,16 +71,27 @@ metadata_callback (MafwRenderer *self,
   if (!track->artist || !track->title)
     return;
 
-  track->timestamp = time_val.tv_sec; /* This should probably be obtained in the
-                                         state changed cb */
+  track->timestamp = current_time;
   track->source = 'P';
   track->album = mafw_metadata_lookup_string (metadata, MAFW_METADATA_KEY_ALBUM);
   track->number = mafw_metadata_lookup_int (metadata, MAFW_METADATA_KEY_TRACK);
   track->length = length;
 
-  mafw_lastfm_scrobbler_enqueue_scrobble (scrobbler, track);
+  mafw_lastfm_scrobbler_enqueue_scrobble (scrobbler, track, position);
 
   mafw_lastfm_track_free (track);
+}
+
+static void
+position_callback (MafwRenderer *renderer,
+                   gint current_position,
+                   gpointer user_data,
+                   const GError *error)
+{
+  position = current_position;
+  mafw_renderer_get_current_metadata (renderer,
+                                      metadata_callback,
+                                      user_data);
 }
 
 static void
@@ -89,11 +99,13 @@ state_changed_cb (MafwRenderer *renderer,
                   MafwPlayState state,
                   gpointer user_data)
 {
+  GTimeVal time_val;
   switch (state) {
   case Playing:
-    mafw_renderer_get_current_metadata (renderer,
-                                        metadata_callback,
-                                        user_data);
+    g_get_current_time (&time_val);
+    current_time = time_val.tv_sec;
+    mafw_renderer_get_position (renderer, position_callback,
+                                user_data);
     break;
   case Paused:
     mafw_lastfm_scrobbler_suspend (MAFW_LASTFM_SCROBBLER (user_data));

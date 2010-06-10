@@ -1,0 +1,46 @@
+# Finnish translations for mafw-lastfm package.
+# Copyright (C) 2010 Claudio Saavedra
+# This file is distributed under the same license as the mafw-lastfm package.
+# Oskari Timperi <oskari.timperi@iki.fi>, 2010.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: mafw-lastfm\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2010-06-01 18:46+0300\n"
+"PO-Revision-Date: 2010-06-04 00:06+0300\n"
+"Last-Translator: Oskari Timperi <oskari.timperi@iki.fi>\n"
+"Language-Team: Finnish\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: ../control-panel/mafw-lastfm-cpa.c:96
+msgid "Enter both your username and password before saving."
+msgstr "Anna sekä käyttäjätunnuksesi että salasanasi ennen tallentamista."
+
+#: ../control-panel/mafw-lastfm-cpa.c:131
+msgid "Last.fm settings"
+msgstr "Last.fm asetukset"
+
+#. NB! Leave untranslated.
+#: ../control-panel/mafw-lastfm-cpa.c:135
+msgid "wdgt_bd_done"
+msgstr ""
+
+#: ../control-panel/mafw-lastfm-cpa.c:140
+msgid "Username:"
+msgstr "Käyttäjätunnus:"
+
+#: ../control-panel/mafw-lastfm-cpa.c:147
+msgid "Password:"
+msgstr "Salasana:"
+
+#: ../control-panel/mafw-lastfm.desktop.in.in.h:1
+msgid "Configure your Last.fm account for scrobbling"
+msgstr "Konfiguroi Last.fm -tilisi scrobblausta varten"
+
+#: ../control-panel/mafw-lastfm.desktop.in.in.h:2
+msgid "Last.fm scrobbler"
+msgstr "Last.fm scrobblaaja"
