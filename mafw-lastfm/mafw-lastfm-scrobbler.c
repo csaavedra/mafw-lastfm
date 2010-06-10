@@ -109,6 +109,10 @@ mafw_lastfm_scrobbler_finalize (GObject *object)
     g_source_remove (priv->playing_now_id);
   if (priv->cache_id)
     g_source_remove (priv->cache_id);
+  if (priv->retry_id)
+    g_source_remove (priv->retry_id);
+  if (priv->handshake_id)
+    g_source_remove (priv->handshake_id);
 
   if (priv->playing_now_track)
     mafw_lastfm_track_free (priv->playing_now_track);
