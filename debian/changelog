@@ -1,5 +1,12 @@
 mafw-lastfm (0.0.8-1) unstable; urgency=low
 
+  * New upstream release:
+    - Rewrite of the core scrobbler code, making it more robust and
+      lightweight. As a result, also:
+    - Scrobble tracks played long enough even if the scrobbler is killed
+      before the track finishes.
+    - Do not scrobble a track that's paused before played long enough and
+      never resumed.
    * Build debug packages with --enable-debug.
 
  -- Claudio Saavedra <csaavedra@igalia.com>  Thu, 10 Jun 2010 11:55:51 +0300
